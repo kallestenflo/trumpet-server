@@ -11,19 +11,19 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.function.Consumer;
 
-public class Client {
+public class Trumpeter {
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(Trumpeter.class);
 
     public final String id;
-    private final Consumer<Client> closeHandler;
+    private final Consumer<Trumpeter> closeHandler;
     private Location location;
     private EventOutput output;
 
 
-    public Client(String id,
-                  Location location,
-                  Consumer<Client> closeHandler) {
+    public Trumpeter(String id,
+                     Location location,
+                     Consumer<Trumpeter> closeHandler) {
         this.id = id;
         this.location = location;
         this.closeHandler = closeHandler;
@@ -31,16 +31,16 @@ public class Client {
 
     public void updateLocation(Location newLocation) {
         this.location = newLocation;
-        logger.debug("Client updateLocation updated : {}, latitude: {}, longitude: {}", id, this.location.latitude, this.location.longitude);
+        logger.debug("Trumpeter {} updated location to latitude: {}, longitude: {}", id, this.location.latitude, this.location.longitude);
     }
 
-    public void postTrumpet(String msg){
+    public void trumpet(String msg){
         try {
-            logger.debug("Pushing trumpet to client : {}, latitude: {}, longitude: {}", id, location.latitude, location.longitude);
+            logger.debug("Pushing trumpet to trumpeter : {}, latitude: {}, longitude: {}", id, location.latitude, location.longitude);
             output.write(createTrumpet(msg));
         } catch (IOException e) {
             if (output.isClosed()) {
-                logger.debug("Client with id {} has ben closed", id);
+                logger.debug("Trumpeter with id {} has ben closed.", id);
                 closeHandler.accept(this);
             }
         }
@@ -50,25 +50,25 @@ public class Client {
         this.output = new EventOutput() {
             @Override
             public void close() throws IOException {
-                closeHandler.accept(Client.this);
+                closeHandler.accept(Trumpeter.this);
                 super.close();
             }
         };
-        logger.debug("Client : {} subscribed", id);
+        logger.debug("Trumpeter {} opened subscription.", id);
 
         return this.output;
     }
 
 
-    public boolean inRangeWithOutput(Client other, int maxDistance) {
+    public boolean inRangeWithOutput(Trumpeter other, int maxDistance) {
         return inRange(other, maxDistance) && hasOutput();
     }
 
-    public boolean inRange(Client other, int maxDistance) {
+    public boolean inRange(Trumpeter other, int maxDistance) {
 
         Double distanceInMeters = this.location.distance(other.location, DistanceUnit.METERS);
 
-        logger.debug("Distance between client {} and client {} is {} meters.", id, other.id, distanceInMeters.intValue());
+        logger.debug("Distance between trumpeter {} and trumpeter {} is {} meters.", id, other.id, distanceInMeters.intValue());
 
         return distanceInMeters.intValue() <= maxDistance;
     }

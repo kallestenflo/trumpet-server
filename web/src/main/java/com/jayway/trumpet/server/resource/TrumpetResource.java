@@ -1,8 +1,8 @@
 package com.jayway.trumpet.server.resource;
 
 
-import com.jayway.trumpet.server.domain.Client;
-import com.jayway.trumpet.server.domain.ClientRepository;
+import com.jayway.trumpet.server.domain.TrumpeterRepository;
+import com.jayway.trumpet.server.domain.Trumpeter;
 import com.jayway.trumpet.server.domain.Location;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
@@ -34,13 +34,13 @@ public class TrumpetResource {
 
     private final int maxDistance;
 
-    private final ClientRepository clientRepository;
+    private final TrumpeterRepository trumpeterRepository;
 
     private final Supplier<WebApplicationException> exceptionSupplier;
 
     public TrumpetResource(int maxDistance) {
         this.maxDistance = maxDistance;
-        this.clientRepository = new ClientRepository();
+        this.trumpeterRepository = new TrumpeterRepository();
         this.exceptionSupplier = () -> new WebApplicationException("Client not found!", Response.Status.FORBIDDEN);
     }
 
@@ -49,24 +49,24 @@ public class TrumpetResource {
                                @QueryParam("latitude") Double latitude,
                                @QueryParam("longitude") Double longitude) {
 
-        Client client = clientRepository.createClient(latitude, longitude);
+        Trumpeter trumpeter = trumpeterRepository.createTrumpeter(latitude, longitude);
 
         HalRepresentation entrypoint = new HalRepresentation();
-        entrypoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("clients").path(client.id).path("subscribe").build());
-        entrypoint.addLink("location", uriInfo.getBaseUriBuilder().path("clients").path(client.id).path("location").build());
-        entrypoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("clients").path(client.id).path("trumpet").build());
+        entrypoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("clients").path(trumpeter.id).path("subscribe").build());
+        entrypoint.addLink("location", uriInfo.getBaseUriBuilder().path("clients").path(trumpeter.id).path("location").build());
+        entrypoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("clients").path(trumpeter.id).path("trumpet").build());
 
         return Response.ok(entrypoint).build();
     }
 
     @PUT
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("clients/{id}/location")
+    @Path("trumpeters/{id}/location")
     public Response location(@PathParam("id") String clientId,
                              @FormParam("latitude") Double latitude,
                              @FormParam("longitude") Double longitude) {
 
-        clientRepository.getById(clientId)
+        trumpeterRepository.getById(clientId)
                 .orElseThrow(exceptionSupplier)
                 .updateLocation(Location.create(latitude, longitude));
 
@@ -75,23 +75,23 @@ public class TrumpetResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("/clients/{id}/trumpet")
+    @Path("/trumpeters/{id}/trumpet")
     public Response trumpet(@PathParam("id") String clientId,
                           @FormParam("msg") String msg) {
 
-        Client trumpeter = clientRepository.getById(clientId).orElseThrow(exceptionSupplier);
+        Trumpeter trumpeter = trumpeterRepository.getById(clientId).orElseThrow(exceptionSupplier);
 
-        clientRepository.clientsInRangeOf(trumpeter, maxDistance).forEach(c -> c.postTrumpet(msg));
+        trumpeterRepository.trumpetersInRangeOf(trumpeter, maxDistance).forEach(c -> c.trumpet(msg));
 
         return Response.ok().build();
     }
 
     @GET
-    @Path("/clients/{id}/subscribe")
+    @Path("/trumpeters/{id}/subscribe")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public EventOutput subscribe(final @PathParam("id") String clientId) {
 
-        return clientRepository.getById(clientId)
+        return trumpeterRepository.getById(clientId)
                 .orElseThrow(exceptionSupplier)
                 .subscribe();
     }

@@ -78,7 +78,7 @@ public class TrumpetServer {
     public void start(){
         try {
             server.start();
-            logger.info("Server started on port: {}", getPort());
+            logger.info("TrumpetServer started on port: {}", getPort());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -134,23 +134,23 @@ public class TrumpetServer {
         System.out.println("Respose 200 ");
         System.out.println("{");
         System.out.println("   \"_links\": {");
-        System.out.println("        \"location\": \"http://localhost:9191/api/clients/1/location\",");
-        System.out.println("        \"subscribe\": \"http://localhost:9191/api/clients/1/subscribe\",");
-        System.out.println("        \"trumpet\": \"http://localhost:9191/api/clients/1/trumpet\"");
+        System.out.println("        \"location\": \"http://localhost:9191/api/trumpeters/1/location\",");
+        System.out.println("        \"subscribe\": \"http://localhost:9191/api/trumpeters/1/subscribe\",");
+        System.out.println("        \"trumpet\": \"http://localhost:9191/api/trumpeters/1/trumpet\"");
         System.out.println("    }");
         System.out.println("}");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("LOCATION");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl -X PUT --data \"latitude=55.583985&longitude=12.957578\" http://localhost:9191/api/clients/1/location");
+        System.out.println("curl -X PUT --data \"latitude=55.583985&longitude=12.957578\" http://localhost:9191/api/trumpeters/1/location");
         System.out.println("Respose 200 (no content)");
         System.out.println("");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("TRUMPET");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl -X POST --data \"msg=This is my first trumpet\" http://localhost:9191/api/clients/1/trumpet");
+        System.out.println("curl -X POST --data \"msg=This is my first trumpet\" http://localhost:9191/api/trumpeters/1/trumpet");
         System.out.println("Respose 200 (no content)");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("SUBSCRIBE");
@@ -159,7 +159,7 @@ public class TrumpetServer {
         System.out.println("2. Message to subscribe to is 'trumpet'");
         System.out.println("3. Message format is: ");
         System.out.println("{");
-        System.out.println("    \"msg\": \"this is the trumpet noice!\" ");
+        System.out.println("    \"msg\": \"This is noise from a trumpeter!\" ");
         System.out.println("}");
 
     }
