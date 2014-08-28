@@ -1,9 +1,9 @@
-package com.jayway.trumpet.service.resource;
+package com.jayway.trumpet.server.resource;
 
 
-import com.jayway.trumpet.service.domain.Client;
-import com.jayway.trumpet.service.domain.ClientRepository;
-import com.jayway.trumpet.service.domain.Location;
+import com.jayway.trumpet.server.domain.Client;
+import com.jayway.trumpet.server.domain.ClientRepository;
+import com.jayway.trumpet.server.domain.Location;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.slf4j.Logger;

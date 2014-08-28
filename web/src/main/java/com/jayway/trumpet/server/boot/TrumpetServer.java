@@ -1,6 +1,6 @@
-package com.jayway.trumpet.service.boot;
+package com.jayway.trumpet.server.boot;
 
-import com.jayway.trumpet.service.resource.TrumpetResource;
+import com.jayway.trumpet.server.resource.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;

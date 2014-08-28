@@ -1,4 +1,4 @@
-package com.jayway.trumpet.service.domain;
+package com.jayway.trumpet.server.domain;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

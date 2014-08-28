@@ -1,4 +1,4 @@
-package com.jayway.trumpet.service.domain;
+package com.jayway.trumpet.server.domain;
 
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;

@@ -1,4 +1,4 @@
-package com.jayway.trumpet.service;
+package com.jayway.trumpet.server;
 
 
 import com.jayway.fixture.ServerRunningRule;

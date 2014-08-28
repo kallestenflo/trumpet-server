@@ -1,4 +1,4 @@
-package com.jayway.trumpet.service.domain;
+package com.jayway.trumpet.server.domain;
 
 import org.junit.Test;
 import org.mockito.Mockito;

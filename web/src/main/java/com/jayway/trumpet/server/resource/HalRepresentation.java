@@ -1,4 +1,4 @@
-package com.jayway.trumpet.service.resource;
+package com.jayway.trumpet.server.resource;
 
 import java.io.Serializable;
 import java.net.URI;

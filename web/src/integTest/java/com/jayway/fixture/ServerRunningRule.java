@@ -1,6 +1,6 @@
 package com.jayway.fixture;
 
-import com.jayway.trumpet.service.boot.TrumpetServer;
+import com.jayway.trumpet.server.boot.TrumpetServer;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;

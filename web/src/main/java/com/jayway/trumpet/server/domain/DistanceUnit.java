@@ -1,4 +1,4 @@
-package com.jayway.trumpet.service.domain;
+package com.jayway.trumpet.server.domain;
 
 public enum DistanceUnit {
     METERS,

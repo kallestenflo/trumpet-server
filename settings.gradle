@@ -1,4 +1,4 @@
-rootProject.name = 'trumpet'
+rootProject.name = 'trumpet-server'
 
 include 'web'
 

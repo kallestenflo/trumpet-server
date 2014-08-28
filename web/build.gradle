@@ -5,7 +5,7 @@ archivesBaseName = 'trumpet-server'
 
 jar {
     manifest {
-        attributes 'Main-Class': "com.jayway.trumpet.service.boot.TrumpetServer"
+        attributes 'Main-Class': "com.jayway.trumpet.server.boot.TrumpetServer"
     }
 }
 

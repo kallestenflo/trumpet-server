@@ -1,4 +1,4 @@
-package com.jayway.trumpet.service.domain;
+package com.jayway.trumpet.server.domain;
 
 import static java.util.Objects.requireNonNull;
 
