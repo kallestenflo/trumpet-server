@@ -77,11 +77,11 @@ public class TrumpetResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeters/{id}/trumpet")
     public Response trumpet(@PathParam("id") String id,
-                          @FormParam("msg") String msg) {
+                            @FormParam("msg") String msg) {
 
         Trumpeter trumpeter = trumpeterRepository.getById(id).orElseThrow(trumpeterNotFound);
 
-        trumpeterRepository.trumpetersInRangeOf(trumpeter, maxDistance).forEach(c -> c.trumpet(msg));
+        trumpeterRepository.findTrumpetersInRangeOf(trumpeter, maxDistance).forEach(t -> t.trumpet(msg));
 
         return Response.ok().build();
     }

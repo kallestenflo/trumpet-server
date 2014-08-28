@@ -22,7 +22,7 @@ public class TrumpeterRepository {
 
         Trumpeter trumpeter = new Trumpeter(Long.toString(idGenerator.incrementAndGet()), Location.create(latitude, longitude), this::delete);
         trumpeters.put(trumpeter.id, trumpeter);
-        logger.debug("Trumpeter created: {}", trumpeter.id);
+        logger.debug("Trumpeter with id {} created.", trumpeter.id);
         return trumpeter;
     }
 
@@ -36,7 +36,7 @@ public class TrumpeterRepository {
         }
     }
 
-    public Stream<Trumpeter> trumpetersInRangeOf(Trumpeter trumpeter, int maxDistance){
+    public Stream<Trumpeter> findTrumpetersInRangeOf(Trumpeter trumpeter, int maxDistance){
 
         return trumpeters.values().stream().filter(c -> c.inRangeWithOutput(trumpeter, maxDistance));
     }

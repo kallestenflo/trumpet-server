@@ -68,7 +68,7 @@ public class Trumpeter {
 
         Double distanceInMeters = this.location.distance(other.location, DistanceUnit.METERS);
 
-        logger.debug("Distance between trumpeter {} and trumpeter {} is {} meters.", id, other.id, distanceInMeters.intValue());
+        logger.debug("Distance between trumpeter {} and trumpeter {} is {} meters. Max distance is {}", id, other.id, distanceInMeters.intValue(), maxDistance);
 
         return distanceInMeters.intValue() <= maxDistance;
     }
