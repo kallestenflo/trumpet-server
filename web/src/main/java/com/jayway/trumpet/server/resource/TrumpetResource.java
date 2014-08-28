@@ -62,11 +62,11 @@ public class TrumpetResource {
     @PUT
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("trumpeters/{id}/location")
-    public Response location(@PathParam("id") String clientId,
+    public Response location(@PathParam("id") String id,
                              @FormParam("latitude") Double latitude,
                              @FormParam("longitude") Double longitude) {
 
-        trumpeterRepository.getById(clientId)
+        trumpeterRepository.getById(id)
                 .orElseThrow(trumpeterNotFound)
                 .updateLocation(Location.create(latitude, longitude));
 
@@ -76,10 +76,10 @@ public class TrumpetResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeters/{id}/trumpet")
-    public Response trumpet(@PathParam("id") String clientId,
+    public Response trumpet(@PathParam("id") String id,
                           @FormParam("msg") String msg) {
 
-        Trumpeter trumpeter = trumpeterRepository.getById(clientId).orElseThrow(trumpeterNotFound);
+        Trumpeter trumpeter = trumpeterRepository.getById(id).orElseThrow(trumpeterNotFound);
 
         trumpeterRepository.trumpetersInRangeOf(trumpeter, maxDistance).forEach(c -> c.trumpet(msg));
 
@@ -89,9 +89,9 @@ public class TrumpetResource {
     @GET
     @Path("/trumpeters/{id}/subscribe")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
-    public EventOutput subscribe(final @PathParam("id") String clientId) {
+    public EventOutput subscribe(final @PathParam("id") String id) {
 
-        return trumpeterRepository.getById(clientId)
+        return trumpeterRepository.getById(id)
                 .orElseThrow(trumpeterNotFound)
                 .subscribe();
     }
