@@ -36,12 +36,12 @@ public class TrumpetResource {
 
     private final TrumpeterRepository trumpeterRepository;
 
-    private final Supplier<WebApplicationException> exceptionSupplier;
+    private final Supplier<WebApplicationException> trumpeterNotFound;
 
     public TrumpetResource(int maxDistance) {
         this.maxDistance = maxDistance;
         this.trumpeterRepository = new TrumpeterRepository();
-        this.exceptionSupplier = () -> new WebApplicationException("Client not found!", Response.Status.FORBIDDEN);
+        this.trumpeterNotFound = () -> new WebApplicationException("Trumpeter not found!", Response.Status.NOT_FOUND);
     }
 
     @GET
@@ -67,7 +67,7 @@ public class TrumpetResource {
                              @FormParam("longitude") Double longitude) {
 
         trumpeterRepository.getById(clientId)
-                .orElseThrow(exceptionSupplier)
+                .orElseThrow(trumpeterNotFound)
                 .updateLocation(Location.create(latitude, longitude));
 
         return Response.ok().build();
@@ -79,7 +79,7 @@ public class TrumpetResource {
     public Response trumpet(@PathParam("id") String clientId,
                           @FormParam("msg") String msg) {
 
-        Trumpeter trumpeter = trumpeterRepository.getById(clientId).orElseThrow(exceptionSupplier);
+        Trumpeter trumpeter = trumpeterRepository.getById(clientId).orElseThrow(trumpeterNotFound);
 
         trumpeterRepository.trumpetersInRangeOf(trumpeter, maxDistance).forEach(c -> c.trumpet(msg));
 
@@ -92,7 +92,7 @@ public class TrumpetResource {
     public EventOutput subscribe(final @PathParam("id") String clientId) {
 
         return trumpeterRepository.getById(clientId)
-                .orElseThrow(exceptionSupplier)
+                .orElseThrow(trumpeterNotFound)
                 .subscribe();
     }
 }
