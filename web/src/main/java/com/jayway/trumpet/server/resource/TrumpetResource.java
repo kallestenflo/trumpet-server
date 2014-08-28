@@ -52,9 +52,9 @@ public class TrumpetResource {
         Trumpeter trumpeter = trumpeterRepository.createTrumpeter(latitude, longitude);
 
         HalRepresentation entrypoint = new HalRepresentation();
-        entrypoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("clients").path(trumpeter.id).path("subscribe").build());
-        entrypoint.addLink("location", uriInfo.getBaseUriBuilder().path("clients").path(trumpeter.id).path("location").build());
-        entrypoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("clients").path(trumpeter.id).path("trumpet").build());
+        entrypoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("subscribe").build());
+        entrypoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("location").build());
+        entrypoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("trumpet").build());
 
         return Response.ok(entrypoint).build();
     }
