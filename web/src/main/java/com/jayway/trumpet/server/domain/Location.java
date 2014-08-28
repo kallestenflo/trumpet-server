@@ -20,7 +20,7 @@ public class Location {
     }
 
 
-    public double distance(Location other, DistanceUnit distanceUnit) {
+    public Double distanceTo(Location other, DistanceUnit distanceUnit) {
         double theta = longitude - other.longitude;
         double dist = Math.sin(deg2rad(latitude)) * Math.sin(deg2rad(other.latitude)) + Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(other.latitude)) * Math.cos(deg2rad(theta));
         dist = Math.acos(dist);

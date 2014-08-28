@@ -66,7 +66,7 @@ public class Trumpeter {
 
     public boolean inRange(Trumpeter other, int maxDistance) {
 
-        Double distanceInMeters = this.location.distance(other.location, DistanceUnit.METERS);
+        Double distanceInMeters = this.location.distanceTo(other.location, DistanceUnit.METERS);
 
         logger.debug("Distance between trumpeter {} and trumpeter {} is {} meters. Max distance is {}", id, other.id, distanceInMeters.intValue(), maxDistance);
 
