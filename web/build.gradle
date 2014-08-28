@@ -1,11 +1,13 @@
 apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'shadow'
 
 archivesBaseName = 'trumpet-server'
+mainClassName = 'com.jayway.trumpet.server.boot.TrumpetServer'
 
 jar {
     manifest {
-        attributes 'Main-Class': "com.jayway.trumpet.server.boot.TrumpetServer"
+        attributes 'Main-Class': mainClassName
     }
 }
 
