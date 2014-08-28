@@ -29,46 +29,7 @@ public class TrumpetServer {
     private Server server;
 
     public TrumpetServer(int port, int maxDistance) {
-        try {
-            server = new Server();
-
-            server.setConnectors(new Connector[]{createConnector(server, port)});
-
-            ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-            context.setContextPath("/api");
-            ServletHolder servletHolder = new ServletHolder(createJerseyServlet(maxDistance));
-            servletHolder.setInitOrder(1);
-            context.addServlet(servletHolder, "/*");
-
-            WebAppContext webAppContext = new WebAppContext();
-            webAppContext.setServer(server);
-            webAppContext.setContextPath("/");
-            webAppContext.setResourceBase(getClass().getResource("/www").toExternalForm());
-
-            HandlerList handlers = new HandlerList();
-            handlers.setHandlers(new Handler[]{context, webAppContext});
-            server.setHandler(handlers);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static ServerConnector createConnector(Server s, int port) {
-        ServerConnector connector = new ServerConnector(s);
-        connector.setHost("localhost");
-        connector.setPort(port);
-        return connector;
-    }
-
-    private static ServletContainer createJerseyServlet(int maxDistance) throws IOException {
-        ResourceConfig resourceConfig = new ResourceConfig();
-        resourceConfig.register(JacksonFeature.class);
-        resourceConfig.register(SseFeature.class);
-
-        resourceConfig.register(new TrumpetResource(maxDistance));
-
-        return new ServletContainer(resourceConfig);
+        this.server = configureServer(port, maxDistance);
     }
 
     public int getPort(){
@@ -161,6 +122,50 @@ public class TrumpetServer {
         System.out.println("{");
         System.out.println("    \"msg\": \"This is noise from a trumpeter!\" ");
         System.out.println("}");
+    }
 
+    private Server configureServer(int port, int maxDistance) {
+        try {
+            Server configServer = new Server();
+
+            configServer.setConnectors(new Connector[]{createConnector(configServer, port)});
+
+            ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+            context.setContextPath("/api");
+            ServletHolder servletHolder = new ServletHolder(createJerseyServlet(maxDistance));
+            servletHolder.setInitOrder(1);
+            context.addServlet(servletHolder, "/*");
+
+            WebAppContext webAppContext = new WebAppContext();
+            webAppContext.setServer(configServer);
+            webAppContext.setContextPath("/");
+            webAppContext.setResourceBase(getClass().getResource("/www").toExternalForm());
+
+            HandlerList handlers = new HandlerList();
+            handlers.setHandlers(new Handler[]{context, webAppContext});
+            configServer.setHandler(handlers);
+
+            return configServer;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ServerConnector createConnector(Server s, int port) {
+        ServerConnector connector = new ServerConnector(s);
+        connector.setHost("localhost");
+        connector.setPort(port);
+        return connector;
+    }
+
+    private ServletContainer createJerseyServlet(int maxDistance) throws IOException {
+        ResourceConfig resourceConfig = new ResourceConfig();
+        resourceConfig.register(JacksonFeature.class);
+        resourceConfig.register(SseFeature.class);
+
+        resourceConfig.register(new TrumpetResource(maxDistance));
+
+        return new ServletContainer(resourceConfig);
     }
 }

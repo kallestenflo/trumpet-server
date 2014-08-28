@@ -5,36 +5,30 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class ServerRunningRule implements TestRule {
 
-    private final AtomicInteger port = new AtomicInteger();
+    private final TrumpetServer server;
 
     public ServerRunningRule() {
-        this.port.set(0);
+        this(0);
     }
 
     public ServerRunningRule(int port) {
-        this.port.set(port);
+        server = new TrumpetServer(port, 200);
     }
 
     public int port(){
-        return this.port.intValue();
+        return server.getPort();
     }
 
     @Override
     public Statement apply(Statement base, Description description) {
-
-        TrumpetServer server = new TrumpetServer(port.intValue(), 200);
 
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 try {
                     server.start();
-
-                    port.set(server.getPort());
 
                     base.evaluate();
                 } finally {
