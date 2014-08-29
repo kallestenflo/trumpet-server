@@ -1,7 +1,7 @@
 package com.jayway.trumpet.server;
 
 import com.jayway.fixture.ServerRunningRule;
-import com.jayway.fixture.Trumpet;
+import com.jayway.fixture.TrumpetTestClient;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -13,23 +13,24 @@ public class TrumpetIntegrationTest {
     @ClassRule
     public static ServerRunningRule server = new ServerRunningRule();
 
+    private static final String MESSAGE = "Ho ho";
+
     @Test
     public void a_trumpeter_receives_messages_when_in_range() {
 
-        Trumpet sender = new Trumpet(server.port(), 55.583985D, 12.957578D);
-        Trumpet receiver1 = new Trumpet(server.port(), 55.584126D, 12.957406D);
-        Trumpet receiver2 = new Trumpet(server.port(), 55.584126D, 12.957406D);
-        Trumpet receiver3 = new Trumpet(server.port(), 55.581212D, 12.959208D);
+        TrumpetTestClient sender = new TrumpetTestClient(server.port(), 55.583985D, 12.957578D);
+        TrumpetTestClient inRange1 = new TrumpetTestClient(server.port(), 55.584126D, 12.957406D);
+        TrumpetTestClient inRange2 = new TrumpetTestClient(server.port(), 55.584126D, 12.957406D);
+        TrumpetTestClient outOfRange1 = new TrumpetTestClient(server.port(), 55.581212D, 12.959208D);
 
-        sender.trumpet("how how");
+        sender.trumpet(MESSAGE);
 
-        await().until(() -> !receiver1.messages().isEmpty());
-        await().until(() -> !receiver2.messages().isEmpty());
+        await().until(() -> !inRange1.messages().isEmpty());
+        await().until(() -> !inRange2.messages().isEmpty());
 
-
-        assertThat(receiver1.messages()).containsExactly("how how");
-        assertThat(receiver2.messages()).containsExactly("how how");
-        assertThat(receiver3.messages().isEmpty()).isTrue();
+        assertThat(inRange1.messages()).containsExactly(MESSAGE);
+        assertThat(inRange2.messages()).containsExactly(MESSAGE);
+        assertThat(outOfRange1.messages().isEmpty()).isTrue();
     }
 
 }

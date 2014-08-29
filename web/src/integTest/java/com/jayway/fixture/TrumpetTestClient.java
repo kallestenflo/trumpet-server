@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.jayway.jsonpath.JsonPath.read;
 
-public class Trumpet {
+public class TrumpetTestClient {
 
     private Client client = ClientBuilder.newBuilder()
             .register(JacksonFeature.class)
@@ -37,7 +37,7 @@ public class Trumpet {
     private final List<String> messages = new CopyOnWriteArrayList<>();
 
 
-    public Trumpet(int port, Double latitude, Double longitude) {
+    public TrumpetTestClient(int port, Double latitude, Double longitude) {
         this.port = port;
         connect(latitude, longitude);
     }

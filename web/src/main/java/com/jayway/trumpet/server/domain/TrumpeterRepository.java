@@ -26,7 +26,7 @@ public class TrumpeterRepository {
         return trumpeter;
     }
 
-    public Optional<Trumpeter> getById(String id){
+    public Optional<Trumpeter> findById(String id){
         return Optional.ofNullable(trumpeters.get(id));
     }
 

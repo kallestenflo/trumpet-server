@@ -14,7 +14,7 @@ public class ServerRunningRule implements TestRule {
     }
 
     public ServerRunningRule(int port) {
-        server = new TrumpetServer(port, 200);
+        server = new TrumpetServer(port);
     }
 
     public int port(){

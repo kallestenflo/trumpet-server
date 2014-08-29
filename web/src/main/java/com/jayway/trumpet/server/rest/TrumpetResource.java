@@ -1,4 +1,4 @@
-package com.jayway.trumpet.server.resource;
+package com.jayway.trumpet.server.rest;
 
 
 import com.jayway.trumpet.server.domain.TrumpeterRepository;
@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -32,14 +33,13 @@ public class TrumpetResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpetResource.class);
 
-    private final int maxDistance;
+    private static final String DEFAULT_DISTANCE = "200";
 
     private final TrumpeterRepository trumpeterRepository;
 
     private final Supplier<WebApplicationException> trumpeterNotFound;
 
-    public TrumpetResource(int maxDistance) {
-        this.maxDistance = maxDistance;
+    public TrumpetResource() {
         this.trumpeterRepository = new TrumpeterRepository();
         this.trumpeterNotFound = () -> new WebApplicationException("Trumpeter not found!", Response.Status.NOT_FOUND);
     }
@@ -66,7 +66,7 @@ public class TrumpetResource {
                              @FormParam("latitude") Double latitude,
                              @FormParam("longitude") Double longitude) {
 
-        trumpeterRepository.getById(id)
+        trumpeterRepository.findById(id)
                 .orElseThrow(trumpeterNotFound)
                 .updateLocation(Location.create(latitude, longitude));
 
@@ -77,11 +77,12 @@ public class TrumpetResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeters/{id}/trumpet")
     public Response trumpet(@PathParam("id") String id,
-                            @FormParam("msg") String msg) {
+                            @FormParam("msg") String msg,
+                            @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) int distance) {
 
-        Trumpeter trumpeter = trumpeterRepository.getById(id).orElseThrow(trumpeterNotFound);
+        Trumpeter trumpeter = trumpeterRepository.findById(id).orElseThrow(trumpeterNotFound);
 
-        trumpeterRepository.findTrumpetersInRangeOf(trumpeter, maxDistance).forEach(t -> t.trumpet(msg));
+        trumpeterRepository.findTrumpetersInRangeOf(trumpeter, distance).forEach(t -> t.trumpet(msg));
 
         return Response.ok().build();
     }
@@ -91,7 +92,7 @@ public class TrumpetResource {
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public EventOutput subscribe(final @PathParam("id") String id) {
 
-        return trumpeterRepository.getById(id)
+        return trumpeterRepository.findById(id)
                 .orElseThrow(trumpeterNotFound)
                 .subscribe();
     }

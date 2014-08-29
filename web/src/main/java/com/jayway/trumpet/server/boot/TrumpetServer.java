@@ -1,6 +1,6 @@
 package com.jayway.trumpet.server.boot;
 
-import com.jayway.trumpet.server.resource.TrumpetResource;
+import com.jayway.trumpet.server.rest.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -24,12 +24,11 @@ public class TrumpetServer {
     private static final Logger logger = LoggerFactory.getLogger(TrumpetServer.class);
 
     public static final int DEFAULT_PORT = 9191;
-    public static final int DEFAULT_MAX_DISTANCE = 200;
 
     private Server server;
 
-    public TrumpetServer(int port, int maxDistance) {
-        this.server = configureServer(port, maxDistance);
+    public TrumpetServer(int port) {
+        this.server = configureServer(port);
     }
 
     public int getPort(){
@@ -57,7 +56,6 @@ public class TrumpetServer {
 
     public static void main(String[] args) throws Exception {
         int port = DEFAULT_PORT;
-        int maxDistance = DEFAULT_MAX_DISTANCE;
 
         if (args.length > 0) {
             try {
@@ -67,14 +65,11 @@ public class TrumpetServer {
                 }
 
                 port = Integer.parseInt(args[0]);
-                if(args.length > 1){
-                    maxDistance = Integer.parseInt(args[1]);
-                }
             } catch (NumberFormatException nfe) {
-                System.out.println("Invalid usage! Arguments are <port> <maxDistance>. If no arguments are provided default values are used: <" + DEFAULT_PORT + "> <" +DEFAULT_MAX_DISTANCE+ ">" );
+                System.out.println("Invalid usage! Arguments are <port> <maxDistance>. If no arguments are provided default values are used: <" + DEFAULT_PORT + ">");
             }
         }
-        TrumpetServer trumpetServer = new TrumpetServer(port, maxDistance);
+        TrumpetServer trumpetServer = new TrumpetServer(port);
         trumpetServer.start();
     }
 
@@ -83,7 +78,7 @@ public class TrumpetServer {
         System.out.println("Commandline options");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("java -jar trumpet-server-1.0.0-shadow.jar <port> <maxDistance>");
+        System.out.println("java -jar trumpet-server-1.0.0-shadow.jar <port>");
 
 
         System.out.println("-----------------------------------------------------------------------------------------------");
@@ -111,7 +106,8 @@ public class TrumpetServer {
         System.out.println("TRUMPET");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl -X POST --data \"msg=This is my first trumpet\" http://localhost:9191/api/trumpeters/1/trumpet");
+        System.out.println("curl -X POST --data \"msg=This is my first trumpet&distance=200\" http://localhost:9191/api/trumpeters/1/trumpet");
+        System.out.println("The form parameter distance is optional");
         System.out.println("Respose 200 (no content)");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("SUBSCRIBE");
@@ -124,7 +120,7 @@ public class TrumpetServer {
         System.out.println("}");
     }
 
-    private Server configureServer(int port, int maxDistance) {
+    private Server configureServer(int port) {
         try {
             Server configServer = new Server();
 
@@ -132,7 +128,7 @@ public class TrumpetServer {
 
             ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
             context.setContextPath("/api");
-            ServletHolder servletHolder = new ServletHolder(createJerseyServlet(maxDistance));
+            ServletHolder servletHolder = new ServletHolder(createJerseyServlet());
             servletHolder.setInitOrder(1);
             context.addServlet(servletHolder, "/*");
 
@@ -159,12 +155,12 @@ public class TrumpetServer {
         return connector;
     }
 
-    private ServletContainer createJerseyServlet(int maxDistance) throws IOException {
+    private ServletContainer createJerseyServlet() throws IOException {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(JacksonFeature.class);
         resourceConfig.register(SseFeature.class);
 
-        resourceConfig.register(new TrumpetResource(maxDistance));
+        resourceConfig.register(new TrumpetResource());
 
         return new ServletContainer(resourceConfig);
     }
