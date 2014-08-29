@@ -43,7 +43,7 @@ public class TrumpetIntegrationTest {
 
         assertThat(exception.response.getStatus()).isEqualTo(400);
 
-        System.out.println( exception.response.readEntity(String.class));
+        //System.out.println( exception.response.readEntity(String.class));
     }
 
 }

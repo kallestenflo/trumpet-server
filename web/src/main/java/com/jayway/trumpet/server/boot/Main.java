@@ -1,0 +1,70 @@
+package com.jayway.trumpet.server.boot;
+
+import org.aeonbits.owner.ConfigFactory;
+
+public class Main {
+
+    public static void main(String[] args) {
+        TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class,
+                System.getProperties(),
+                System.getenv());
+
+        if (args.length > 0) {
+            if(args[0].equalsIgnoreCase("-help") || args[0].equalsIgnoreCase("-h") ){
+                docs();
+                System.exit(0);
+            }
+        }
+        TrumpetServer trumpetServer = new TrumpetServer(config);
+        trumpetServer.start();
+    }
+
+    private static void docs(){
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("Commandline options");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("Default port: 9191 ");
+        System.out.println("Default host: 0.0.0.0");
+        System.out.println("");
+        System.out.println("java -Dserver.http.port=9999 -Dserver.http.host=localhost -jar trumpet-server-1.0.0-shadow.jar");
+
+
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("ENTRY POINT");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("");
+        System.out.println("curl \"http://localhost:9191/api/?latitude=55.583985&longitude=12.957578\" ");
+        System.out.println("");
+        System.out.println("Respose 200 ");
+        System.out.println("{");
+        System.out.println("   \"_links\": {");
+        System.out.println("        \"location\": \"http://localhost:9191/api/trumpeters/1/location\",");
+        System.out.println("        \"subscribe\": \"http://localhost:9191/api/trumpeters/1/subscribe\",");
+        System.out.println("        \"trumpet\": \"http://localhost:9191/api/trumpeters/1/trumpet\"");
+        System.out.println("    }");
+        System.out.println("}");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("LOCATION");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("");
+        System.out.println("curl -X PUT --data \"latitude=55.583985&longitude=12.957578\" http://localhost:9191/api/trumpeters/1/location");
+        System.out.println("Respose 200 (no content)");
+        System.out.println("");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("TRUMPET");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("");
+        System.out.println("curl -X POST --data \"msg=This is my first trumpet&distance=200\" http://localhost:9191/api/trumpeters/1/trumpet");
+        System.out.println("The form parameter distance is optional");
+        System.out.println("Respose 200 (no content)");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("SUBSCRIBE");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("1. Open EventSource to href");
+        System.out.println("2. Message to subscribe to is 'trumpet'");
+        System.out.println("3. Message format is: ");
+        System.out.println("{");
+        System.out.println("    \"msg\": \"This is noise from a trumpeter!\" ");
+        System.out.println("}");
+    }
+}

@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'shadow'
 
 archivesBaseName = 'trumpet-server'
-mainClassName = 'com.jayway.trumpet.server.boot.TrumpetServer'
+mainClassName = 'com.jayway.trumpet.server.boot.Main'
 
 jar {
     manifest {
@@ -26,6 +26,8 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.5'
     compile 'ch.qos.logback:logback-core:1.1.2'
     compile 'ch.qos.logback:logback-classic:1.1.2'
+
+    compile 'org.aeonbits.owner:owner:1.0.5.1'
 
     testCompile 'junit:junit:4.11'
     testCompile 'com.jayway.awaitility:awaitility:1.6.1'
