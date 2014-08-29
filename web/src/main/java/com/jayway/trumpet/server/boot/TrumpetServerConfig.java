@@ -5,8 +5,9 @@ import org.aeonbits.owner.Config;
 import static org.aeonbits.owner.Config.*;
 
 @LoadPolicy(LoadType.MERGE)
-@Sources({"file:~/.trumpetServer.config",
-         "file:/etc/trumpetServer.config"})
+@Sources({"file:trumpetServer.config",
+          "file:~/.trumpetServer.config",
+          "file:/etc/trumpetServer.config"})
 public interface TrumpetServerConfig extends Config {
 
     @Key("server.http.port")

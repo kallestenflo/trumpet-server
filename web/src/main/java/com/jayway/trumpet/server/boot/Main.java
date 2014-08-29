@@ -20,6 +20,17 @@ public class Main {
     }
 
     private static void docs(){
+
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("Configuration");
+        System.out.println("-----------------------------------------------------------------------------------------------");
+        System.out.println("When bootstrapping tha application will scan for configurations in the order described below.");
+        System.out.println("Properties defined in one file has precedence over properties defined later in the list of sources.");
+        System.out.println("");
+        System.out.println("    file:trumpetServer.config");
+        System.out.println("    file:~/.trumpetServer.config");
+        System.out.println("    file:/etc/trumpetServer.config");
+        System.out.println("");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("Commandline options");
         System.out.println("-----------------------------------------------------------------------------------------------");

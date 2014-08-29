@@ -21,6 +21,7 @@ public class Trumpeter {
     private final Consumer<Trumpeter> closeHandler;
     private Location location;
     private EventOutput output;
+    private long lastAccessed;
 
 
     public Trumpeter(String id,
@@ -34,6 +35,11 @@ public class Trumpeter {
         this.id = id;
         this.location = location;
         this.closeHandler = closeHandler;
+        updateLastAccessed();
+    }
+
+    void updateLastAccessed(){
+        this.lastAccessed = System.currentTimeMillis();
     }
 
     public void updateLocation(Location newLocation) {

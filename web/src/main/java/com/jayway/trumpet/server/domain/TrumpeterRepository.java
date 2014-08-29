@@ -27,7 +27,11 @@ public class TrumpeterRepository {
     }
 
     public Optional<Trumpeter> findById(String id){
-        return Optional.ofNullable(trumpeters.get(id));
+        Optional<Trumpeter> trumpeter = Optional.ofNullable(trumpeters.get(id));
+
+        trumpeter.ifPresent(t -> t.updateLastAccessed());
+
+        return trumpeter;
     }
 
     public void delete(Trumpeter trumpeter){
