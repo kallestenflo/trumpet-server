@@ -42,8 +42,6 @@ public class TrumpetIntegrationTest {
         TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(""));
 
         assertThat(exception.response.getStatus()).isEqualTo(400);
-
-        //System.out.println( exception.response.readEntity(String.class));
     }
 
 }

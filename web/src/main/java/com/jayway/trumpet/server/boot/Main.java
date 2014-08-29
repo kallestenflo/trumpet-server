@@ -48,6 +48,7 @@ public class Main {
         System.out.println("");
         System.out.println("Respose 200 ");
         System.out.println("{");
+        System.out.println("   \"id\" : \"1\",");
         System.out.println("   \"_links\": {");
         System.out.println("        \"location\": \"http://localhost:9191/api/trumpeters/1/location\",");
         System.out.println("        \"subscribe\": \"http://localhost:9191/api/trumpeters/1/subscribe\",");
