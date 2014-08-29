@@ -21,6 +21,9 @@ public class Location {
 
 
     public Double distanceTo(Location other, DistanceUnit distanceUnit) {
+        requireNonNull(latitude, "latitude can not be null");
+        requireNonNull(longitude, "longitude can not be null");
+
         double theta = longitude - other.longitude;
         double dist = Math.sin(deg2rad(latitude)) * Math.sin(deg2rad(other.latitude)) + Math.cos(deg2rad(latitude)) * Math.cos(deg2rad(other.latitude)) * Math.cos(deg2rad(theta));
         dist = Math.acos(dist);

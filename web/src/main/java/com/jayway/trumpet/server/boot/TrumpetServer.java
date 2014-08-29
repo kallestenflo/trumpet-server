@@ -12,6 +12,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +151,7 @@ public class TrumpetServer {
 
     private ServerConnector createConnector(Server s, int port) {
         ServerConnector connector = new ServerConnector(s);
-        connector.setHost("localhost");
+        connector.setHost("0.0.0.0");
         connector.setPort(port);
         return connector;
     }
@@ -159,6 +160,7 @@ public class TrumpetServer {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(JacksonFeature.class);
         resourceConfig.register(SseFeature.class);
+        resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
         resourceConfig.register(new TrumpetResource());
 

@@ -1,11 +1,13 @@
 package com.jayway.trumpet.server;
 
 import com.jayway.fixture.ServerRunningRule;
-import com.jayway.fixture.TrumpetTestClient;
+import com.jayway.fixture.TrumpetClient;
+import com.jayway.fixture.TrumpetClientException;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.fixture.ThrowableExpecter.expect;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TrumpetIntegrationTest {
@@ -18,10 +20,10 @@ public class TrumpetIntegrationTest {
     @Test
     public void a_trumpeter_receives_messages_when_in_range() {
 
-        TrumpetTestClient sender = new TrumpetTestClient(server.port(), 55.583985D, 12.957578D);
-        TrumpetTestClient inRange1 = new TrumpetTestClient(server.port(), 55.584126D, 12.957406D);
-        TrumpetTestClient inRange2 = new TrumpetTestClient(server.port(), 55.584126D, 12.957406D);
-        TrumpetTestClient outOfRange1 = new TrumpetTestClient(server.port(), 55.581212D, 12.959208D);
+        TrumpetClient sender = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+        TrumpetClient inRange1 = TrumpetClient.create(server.port()).connect(55.584126D, 12.957406D);
+        TrumpetClient inRange2 = TrumpetClient.create(server.port()).connect(55.584126D, 12.957406D);
+        TrumpetClient outOfRange1 = TrumpetClient.create(server.port()).connect(55.581212D, 12.959208D);
 
         sender.trumpet(MESSAGE);
 
@@ -31,6 +33,17 @@ public class TrumpetIntegrationTest {
         assertThat(inRange1.messages()).containsExactly(MESSAGE);
         assertThat(inRange2.messages()).containsExactly(MESSAGE);
         assertThat(outOfRange1.messages().isEmpty()).isTrue();
+    }
+
+    @Test
+    public void a_trumpet_message_can_not_be_null_or_empty() {
+        TrumpetClient sender = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+
+        TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(""));
+
+        assertThat(exception.response.getStatus()).isEqualTo(400);
+
+        System.out.println( exception.response.readEntity(String.class));
     }
 
 }

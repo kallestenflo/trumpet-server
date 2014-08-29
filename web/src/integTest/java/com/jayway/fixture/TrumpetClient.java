@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.jayway.jsonpath.JsonPath.read;
 
-public class TrumpetTestClient {
+public class TrumpetClient {
 
     private Client client = ClientBuilder.newBuilder()
             .register(JacksonFeature.class)
@@ -37,12 +37,15 @@ public class TrumpetTestClient {
     private final List<String> messages = new CopyOnWriteArrayList<>();
 
 
-    public TrumpetTestClient(int port, Double latitude, Double longitude) {
-        this.port = port;
-        connect(latitude, longitude);
+    public static TrumpetClient create(int port){
+        return new TrumpetClient(port);
     }
 
-    private void connect(Double latitude, Double longitude){
+    private TrumpetClient(int port) {
+        this.port = port;
+    }
+
+    public TrumpetClient connect(Double latitude, Double longitude){
         WebTarget target = client.target("http://localhost:" + port + "/api")
                 .queryParam("latitude", latitude)
                 .queryParam("longitude", longitude);
@@ -71,6 +74,8 @@ public class TrumpetTestClient {
             }
         };
         thread.start();
+
+        return this;
     }
 
     public List<String> messages(){
@@ -87,7 +92,7 @@ public class TrumpetTestClient {
                 .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
 
         if(response.getStatus() != 200){
-            throw new RuntimeException("Failed to trumpet!");
+            throw new TrumpetClientException(response);
         }
     }
 

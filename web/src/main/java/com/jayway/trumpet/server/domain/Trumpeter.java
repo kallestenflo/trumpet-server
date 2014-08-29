@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.function.Consumer;
 
+import static java.util.Objects.requireNonNull;
+
 public class Trumpeter {
 
     private static final Logger logger = LoggerFactory.getLogger(Trumpeter.class);
@@ -24,20 +26,29 @@ public class Trumpeter {
     public Trumpeter(String id,
                      Location location,
                      Consumer<Trumpeter> closeHandler) {
+
+        requireNonNull(id, "Id can not be null.");
+        requireNonNull(location, "Location can not be null.");
+        requireNonNull(closeHandler, "Close handler can not be null.");
+
         this.id = id;
         this.location = location;
         this.closeHandler = closeHandler;
     }
 
     public void updateLocation(Location newLocation) {
+        requireNonNull(location, "Location can not be null.");
+
         this.location = newLocation;
         logger.debug("Trumpeter {} updated location to latitude: {}, longitude: {}", id, this.location.latitude, this.location.longitude);
     }
 
-    public void trumpet(String msg){
+    public void trumpet(String message){
+        requireNonNull(message, "Message can not be null.");
+
         try {
             logger.debug("Pushing trumpet to trumpeter : {}, latitude: {}, longitude: {}", id, location.latitude, location.longitude);
-            output.write(createTrumpet(msg));
+            output.write(createTrumpet(message));
         } catch (IOException e) {
             if (output.isClosed()) {
                 logger.debug("Trumpeter with id {} has ben closed.", id);
@@ -61,10 +72,17 @@ public class Trumpeter {
 
 
     public boolean inRangeWithOutput(Trumpeter other, int maxDistance) {
+
+        requireNonNull(other, "Other trumpeter can not be null.");
+        requirePositiveInteger(maxDistance, "Distance must be greater than 0.");
+
         return inRange(other, maxDistance) && hasOutput();
     }
 
     public boolean inRange(Trumpeter other, int maxDistance) {
+
+        requireNonNull(other, "Other trumpeter can not be null.");
+        requirePositiveInteger(maxDistance, "Distance must be greater than 0.");
 
         Double distanceInMeters = this.location.distanceTo(other.location, DistanceUnit.METERS);
 
@@ -83,6 +101,12 @@ public class Trumpeter {
                 .data(Collections.singletonMap("msg", msg))
                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
                 .build();
+    }
+
+    private void requirePositiveInteger(int i, String message){
+        if(i < 1){
+            throw new IllegalArgumentException(message);
+        }
     }
 
 

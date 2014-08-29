@@ -1,14 +1,16 @@
 package com.jayway.trumpet.server.rest;
 
 
-import com.jayway.trumpet.server.domain.TrumpeterRepository;
-import com.jayway.trumpet.server.domain.Trumpeter;
 import com.jayway.trumpet.server.domain.Location;
+import com.jayway.trumpet.server.domain.Trumpeter;
+import com.jayway.trumpet.server.domain.TrumpeterRepository;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
@@ -46,8 +48,8 @@ public class TrumpetResource {
 
     @GET
     public Response entrypoint(@Context UriInfo uriInfo,
-                               @QueryParam("latitude") Double latitude,
-                               @QueryParam("longitude") Double longitude) {
+                               @NotNull @QueryParam("latitude") Double latitude,
+                               @NotNull @QueryParam("longitude") Double longitude) {
 
         Trumpeter trumpeter = trumpeterRepository.createTrumpeter(latitude, longitude);
 
@@ -63,8 +65,8 @@ public class TrumpetResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("trumpeters/{id}/location")
     public Response location(@PathParam("id") String id,
-                             @FormParam("latitude") Double latitude,
-                             @FormParam("longitude") Double longitude) {
+                             @NotNull @FormParam("latitude") Double latitude,
+                             @NotNull @FormParam("longitude") Double longitude) {
 
         trumpeterRepository.findById(id)
                 .orElseThrow(trumpeterNotFound)
@@ -77,8 +79,8 @@ public class TrumpetResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeters/{id}/trumpet")
     public Response trumpet(@PathParam("id") String id,
-                            @FormParam("msg") String msg,
-                            @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) int distance) {
+                            @NotEmpty @FormParam("msg") String msg,
+                            @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) Integer distance) {
 
         Trumpeter trumpeter = trumpeterRepository.findById(id).orElseThrow(trumpeterNotFound);
 
