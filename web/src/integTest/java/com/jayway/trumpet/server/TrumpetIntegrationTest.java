@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.fixture.ThrowableExpecter.expect;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TrumpetIntegrationTest {
@@ -30,8 +31,8 @@ public class TrumpetIntegrationTest {
         await().until(() -> !inRange1.messages().isEmpty());
         await().until(() -> !inRange2.messages().isEmpty());
 
-        assertThat(inRange1.messages()).containsExactly(MESSAGE);
-        assertThat(inRange2.messages()).containsExactly(MESSAGE);
+        assertThat(inRange1.messages()).extracting("message").containsExactly(MESSAGE);
+        assertThat(inRange2.messages()).extracting("message").containsExactly(MESSAGE);
         assertThat(outOfRange1.messages().isEmpty()).isTrue();
     }
 
@@ -41,7 +42,7 @@ public class TrumpetIntegrationTest {
 
         TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(""));
 
-        assertThat(exception.response.getStatus()).isEqualTo(400);
+        assertThat(exception.response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     }
 
 }

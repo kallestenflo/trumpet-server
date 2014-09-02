@@ -61,7 +61,7 @@ public class TrumpetServer {
 
             ServletContextHandler context = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
             context.setContextPath("/api");
-            ServletHolder servletHolder = new ServletHolder(createJerseyServlet());
+            ServletHolder servletHolder = new ServletHolder(createJerseyServlet(config));
             servletHolder.setInitOrder(1);
             context.addServlet(servletHolder, "/*");
 
@@ -88,13 +88,13 @@ public class TrumpetServer {
         return connector;
     }
 
-    private ServletContainer createJerseyServlet() throws IOException {
+    private ServletContainer createJerseyServlet(TrumpetServerConfig config) throws IOException {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(JacksonFeature.class);
         resourceConfig.register(SseFeature.class);
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
-        resourceConfig.register(new TrumpetResource());
+        resourceConfig.register(new TrumpetResource(config));
 
         return new ServletContainer(resourceConfig);
     }

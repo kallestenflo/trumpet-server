@@ -2,9 +2,13 @@ package com.jayway.fixture;
 
 import com.jayway.trumpet.server.boot.TrumpetServer;
 import com.jayway.trumpet.server.boot.TrumpetServerConfig;
+import com.jayway.trumpet.server.domain.TrumpeterRepository;
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+
+import java.util.Properties;
 
 public class ServerRunningRule implements TestRule {
 
@@ -14,19 +18,20 @@ public class ServerRunningRule implements TestRule {
         this(0);
     }
 
-    public ServerRunningRule(final int port) {
+    public ServerRunningRule(int port) {
 
-        TrumpetServerConfig config = new TrumpetServerConfig() {
-            @Override
-            public int port() {
-                return port;
-            }
+        Properties props = new Properties();
+        props.setProperty(TrumpetServerConfig.SERVER_HTTP_PORT, String.valueOf(port));
+        props.setProperty(TrumpetServerConfig.TRUMPETER_STALE_THRESHOLD, "1000000");
+        props.setProperty(TrumpetServerConfig.TRUMPETER_PURGE_INTERVAL, "1000000");
 
-            @Override
-            public String hostname() {
-                return "localhost";
-            }
-        };
+        TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class, props);
+
+        server = new TrumpetServer(config);
+    }
+
+    public ServerRunningRule(Properties props) {
+        TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class, props);
 
         server = new TrumpetServer(config);
     }

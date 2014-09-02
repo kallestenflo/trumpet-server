@@ -1,11 +1,13 @@
 package com.jayway.trumpet.server.rest;
 
 
+import com.jayway.trumpet.server.boot.TrumpetServerConfig;
 import com.jayway.trumpet.server.domain.Location;
 import com.jayway.trumpet.server.domain.Trumpeter;
 import com.jayway.trumpet.server.domain.TrumpeterRepository;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import java.util.LongSummaryStatistics;
 import java.util.function.Supplier;
 
 @Path("/")
@@ -41,20 +44,20 @@ public class TrumpetResource {
 
     private final Supplier<WebApplicationException> trumpeterNotFound;
 
-    public TrumpetResource() {
-        this.trumpeterRepository = new TrumpeterRepository();
+    public TrumpetResource(TrumpetServerConfig config) {
+        this.trumpeterRepository = new TrumpeterRepository(config);
         this.trumpeterNotFound = () -> new WebApplicationException("Trumpeter not found!", Response.Status.NOT_FOUND);
     }
 
     @GET
-    public Response entrypoint(@Context UriInfo uriInfo,
+    public Response entryPoint(@Context UriInfo uriInfo,
                                @NotNull @QueryParam("latitude") Double latitude,
                                @NotNull @QueryParam("longitude") Double longitude) {
 
         Trumpeter trumpeter = trumpeterRepository.createTrumpeter(latitude, longitude);
 
         HalRepresentation entryPoint = new HalRepresentation();
-        entryPoint.put("id", trumpeter.id);
+        entryPoint.put("trumpeterId", trumpeter.id);
         entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("subscribe").build());
         entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("location").build());
         entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("trumpet").build());
@@ -80,12 +83,16 @@ public class TrumpetResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeters/{id}/trumpet")
     public Response trumpet(@PathParam("id") String id,
-                            @NotEmpty @FormParam("msg") String msg,
-                            @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) Integer distance) {
+                            @NotBlank @FormParam("msg") String msg,
+                            @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) Long distance) {
 
         Trumpeter trumpeter = trumpeterRepository.findById(id).orElseThrow(trumpeterNotFound);
 
-        trumpeterRepository.findTrumpetersInRangeOf(trumpeter, distance).forEach(t -> t.trumpet(msg));
+        //trumpeterRepository.findTrumpetersInRangeOf(trumpeter, distance).forEach(t -> t.trumpet(msg, Long.MIN_VALUE));
+
+
+        trumpeterRepository.findTrumpetersWithDistanceInRangeOf(trumpeter, distance)
+                .forEach(tuple -> tuple.left.trumpet(msg, tuple.right));
 
         return Response.ok().build();
     }

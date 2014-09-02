@@ -9,6 +9,8 @@ import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
@@ -20,7 +22,7 @@ public class Trumpeter {
     public final String id;
     private final Consumer<Trumpeter> closeHandler;
     private Location location;
-    private EventOutput output;
+    private TrumpeterEventOutput output;
     private long lastAccessed;
 
 
@@ -32,13 +34,18 @@ public class Trumpeter {
         requireNonNull(location, "Location can not be null.");
         requireNonNull(closeHandler, "Close handler can not be null.");
 
+        this.closeHandler = closeHandler;
         this.id = id;
         this.location = location;
-        this.closeHandler = closeHandler;
+        this.output = createEventOutput();
         updateLastAccessed();
     }
 
-    void updateLastAccessed(){
+    boolean isStale(long staleThreshold) {
+        return ((lastAccessed + staleThreshold) < System.currentTimeMillis()) || output.isClosed();
+    }
+
+    void updateLastAccessed() {
         this.lastAccessed = System.currentTimeMillis();
     }
 
@@ -49,69 +56,85 @@ public class Trumpeter {
         logger.debug("Trumpeter {} updated location to latitude: {}, longitude: {}", id, this.location.latitude, this.location.longitude);
     }
 
-    public void trumpet(String message){
+    public void trumpet(String message, long distanceFromSource) {
         requireNonNull(message, "Message can not be null.");
 
         try {
             logger.debug("Pushing trumpet to trumpeter : {}, latitude: {}, longitude: {}", id, location.latitude, location.longitude);
-            output.write(createTrumpet(message));
+            output.write(createTrumpet(message, distanceFromSource));
         } catch (IOException e) {
-            if (output.isClosed()) {
-                logger.debug("Trumpeter with id {} has ben closed.", id);
-                closeHandler.accept(this);
-            }
+            close();
         }
     }
 
-    public EventOutput subscribe(){
-        this.output = new EventOutput() {
-            @Override
-            public void close() throws IOException {
-                closeHandler.accept(Trumpeter.this);
-                super.close();
-            }
-        };
-        logger.debug("Trumpeter {} opened subscription.", id);
-
+    public EventOutput subscribe() {
+        if (output.isClosed()) {
+            output = createEventOutput();
+        }
+        logger.debug("Trumpeter {} subscription created.", id);
         return this.output;
     }
 
-
-    public boolean inRangeWithOutput(Trumpeter other, int maxDistance) {
-
-        requireNonNull(other, "Other trumpeter can not be null.");
-        requirePositiveInteger(maxDistance, "Distance must be greater than 0.");
-
-        return inRange(other, maxDistance) && hasOutput();
+    private TrumpeterEventOutput createEventOutput() {
+        return new TrumpeterEventOutput();
     }
 
-    public boolean inRange(Trumpeter other, int maxDistance) {
+    void close() {
+        output.close();
+    }
+
+
+    public boolean inRange(Trumpeter other, long maxDistance) {
 
         requireNonNull(other, "Other trumpeter can not be null.");
-        requirePositiveInteger(maxDistance, "Distance must be greater than 0.");
+        requirePositive(maxDistance, "Distance must be greater than 0.");
 
         Double distanceInMeters = this.location.distanceTo(other.location, DistanceUnit.METERS);
 
         logger.debug("Distance between trumpeter {} and trumpeter {} is {} meters. Max distance is {}", id, other.id, distanceInMeters.intValue(), maxDistance);
 
-        return distanceInMeters.intValue() <= maxDistance;
+        return distanceInMeters.longValue() <= maxDistance;
     }
 
-    private boolean hasOutput(){
-        return output != null;
+    public Double distanceTo(Trumpeter other, DistanceUnit distancUnit){
+        return this.location.distanceTo(other.location, distancUnit);
     }
 
-    private OutboundEvent createTrumpet(String msg) {
+
+    private OutboundEvent createTrumpet(String msg, long distanceFromSource) {
+        /*
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("msg", msg);
+        payload.put("distanceFromSource", distanceFromSource);
+        */
         return new OutboundEvent.Builder()
                 .name("trumpet")
-                .data(Collections.singletonMap("msg", msg))
+                .data(TrumpetMessage.create(msg, distanceFromSource))
                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
                 .build();
     }
 
-    private void requirePositiveInteger(int i, String message){
-        if(i < 1){
+    private void requirePositive(long i, String message) {
+        if (i < 1) {
             throw new IllegalArgumentException(message);
+        }
+    }
+
+    private class TrumpeterEventOutput extends EventOutput {
+
+        boolean closed = false;
+
+        @Override
+        public void close() {
+            try {
+                if(!closed){
+                    closeHandler.accept(Trumpeter.this);
+                }
+                super.close();
+                closed = true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
