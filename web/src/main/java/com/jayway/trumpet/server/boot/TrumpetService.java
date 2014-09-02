@@ -37,7 +37,7 @@ public class TrumpetService {
     public void start(){
         try {
             server.start();
-            logger.info("TrumpetServer running on port: {}", getPort());
+            logger.info("Trumpet service running on port: {}", getPort());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
