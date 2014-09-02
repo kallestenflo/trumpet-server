@@ -77,7 +77,7 @@ public class Main {
         System.out.println("3. Message format is: ");
         System.out.println("{");
         System.out.println("    \"message\": \"This is noise from a trumpeter!\", ");
-        System.out.println("    \"distanceFromSource\": 240, ");
+        System.out.println("    \"distanceFromSource\": 240");
         System.out.println("}");
     }
 }
