@@ -87,7 +87,7 @@ public class TrumpetClient {
         WebTarget target = client.target(trumpetUri);
 
         Form form = new Form();
-        form.param("msg", message);
+        form.param("message", message);
 
         Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));

@@ -66,7 +66,7 @@ public class Main {
         System.out.println("TRUMPET");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl -X POST --data \"msg=This is my first trumpet&distance=200\" http://localhost:9191/api/trumpeters/1/trumpet");
+        System.out.println("curl -X POST --data \"message=This is my first trumpet&distance=200\" http://localhost:9191/api/trumpeters/1/trumpet");
         System.out.println("The form parameter distance is optional");
         System.out.println("Respose 200 (no content)");
         System.out.println("-----------------------------------------------------------------------------------------------");
@@ -76,7 +76,8 @@ public class Main {
         System.out.println("2. Message to subscribe to is 'trumpet'");
         System.out.println("3. Message format is: ");
         System.out.println("{");
-        System.out.println("    \"msg\": \"This is noise from a trumpeter!\" ");
+        System.out.println("    \"message\": \"This is noise from a trumpeter!\", ");
+        System.out.println("    \"distanceFromSource\": 240, ");
         System.out.println("}");
     }
 }

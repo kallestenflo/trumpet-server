@@ -60,7 +60,7 @@ public class Trumpeter {
         requireNonNull(message, "Message can not be null.");
 
         try {
-            logger.debug("Pushing trumpet to trumpeter : {}, latitude: {}, longitude: {}", id, location.latitude, location.longitude);
+            logger.debug("Pushing trumpet to trumpeter : {}, latitude: {}, longitude: {}. Distance from source: {} meters", id, location.latitude, location.longitude, distanceFromSource);
             output.write(createTrumpet(message, distanceFromSource));
         } catch (IOException e) {
             close();
@@ -96,17 +96,12 @@ public class Trumpeter {
         return distanceInMeters.longValue() <= maxDistance;
     }
 
-    public Double distanceTo(Trumpeter other, DistanceUnit distancUnit){
-        return this.location.distanceTo(other.location, distancUnit);
+    public Double distanceTo(Trumpeter other, DistanceUnit distanceUnit){
+        return this.location.distanceTo(other.location, distanceUnit);
     }
 
 
     private OutboundEvent createTrumpet(String msg, long distanceFromSource) {
-        /*
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("msg", msg);
-        payload.put("distanceFromSource", distanceFromSource);
-        */
         return new OutboundEvent.Builder()
                 .name("trumpet")
                 .data(TrumpetMessage.create(msg, distanceFromSource))

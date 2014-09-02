@@ -83,7 +83,7 @@ public class TrumpetResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeters/{id}/trumpet")
     public Response trumpet(@PathParam("id") String id,
-                            @NotBlank @FormParam("msg") String msg,
+                            @NotBlank @FormParam("message") String message,
                             @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) Long distance) {
 
         Trumpeter trumpeter = trumpeterRepository.findById(id).orElseThrow(trumpeterNotFound);
@@ -92,7 +92,7 @@ public class TrumpetResource {
 
 
         trumpeterRepository.findTrumpetersWithDistanceInRangeOf(trumpeter, distance)
-                .forEach(tuple -> tuple.left.trumpet(msg, tuple.right));
+                .forEach(tuple -> tuple.left.trumpet(message, tuple.right));
 
         return Response.ok().build();
     }
