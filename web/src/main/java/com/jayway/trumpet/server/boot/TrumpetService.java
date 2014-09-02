@@ -68,7 +68,12 @@ public class TrumpetService {
             WebAppContext webAppContext = new WebAppContext();
             webAppContext.setServer(configServer);
             webAppContext.setContextPath("/");
-            webAppContext.setResourceBase(getClass().getResource("/www").toExternalForm());
+            if(config.resourceBase().startsWith("classpath")){
+                webAppContext.setResourceBase(getClass().getResource("/www").toExternalForm());
+            } else {
+                webAppContext.setResourceBase(config.resourceBase());
+            }
+
 
             HandlerList handlers = new HandlerList();
             handlers.setHandlers(new Handler[]{context, webAppContext});
