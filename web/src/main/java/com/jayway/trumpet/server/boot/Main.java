@@ -5,7 +5,7 @@ import org.aeonbits.owner.ConfigFactory;
 public class Main {
 
     public static void main(String[] args) {
-        TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class,
+        TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class,
                 System.getProperties(),
                 System.getenv());
 
@@ -15,8 +15,8 @@ public class Main {
                 System.exit(0);
             }
         }
-        TrumpetServer trumpetServer = new TrumpetServer(config);
-        trumpetServer.start();
+        TrumpetService trumpetService = new TrumpetService(config);
+        trumpetService.start();
     }
 
     private static void docs(){
@@ -27,9 +27,9 @@ public class Main {
         System.out.println("When bootstrapping tha application will scan for configurations in the order described below.");
         System.out.println("Properties defined in one file has precedence over properties defined later in the list of sources.");
         System.out.println("");
-        System.out.println("    file:trumpetServer.config");
-        System.out.println("    file:~/.trumpetServer.config");
-        System.out.println("    file:/etc/trumpetServer.config");
+        System.out.println("    file:trumpet.config");
+        System.out.println("    file:~/.trumpet.config");
+        System.out.println("    file:/etc/trumpet.config");
         System.out.println("");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("Commandline options");

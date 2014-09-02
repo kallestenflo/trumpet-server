@@ -10,7 +10,7 @@ public class Tuple<LEFT, RIGHT> {
         this.right = right;
     }
 
-    public static <LEFT, RIGHT> Tuple<LEFT, RIGHT> create(LEFT left, RIGHT right){
+    public static <LEFT, RIGHT> Tuple<LEFT, RIGHT> tuple(LEFT left, RIGHT right){
         return new Tuple<>(left, right);
     }
 }

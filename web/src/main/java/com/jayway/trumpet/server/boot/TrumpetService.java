@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 
-public class TrumpetServer {
+public class TrumpetService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrumpetServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrumpetService.class);
 
     private Server server;
 
-    public TrumpetServer(TrumpetServerConfig config) {
+    public TrumpetService(TrumpetConfig config) {
         this.server = configureServer(config);
     }
 
@@ -53,7 +53,7 @@ public class TrumpetServer {
         }
     }
 
-    private Server configureServer(TrumpetServerConfig config) {
+    private Server configureServer(TrumpetConfig config) {
         try {
             Server configServer = new Server();
 
@@ -88,7 +88,7 @@ public class TrumpetServer {
         return connector;
     }
 
-    private ServletContainer createJerseyServlet(TrumpetServerConfig config) throws IOException {
+    private ServletContainer createJerseyServlet(TrumpetDomainConfig config) throws IOException {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(JacksonFeature.class);
         resourceConfig.register(SseFeature.class);

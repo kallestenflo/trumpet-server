@@ -1,5 +1,6 @@
 package com.jayway.trumpet.server.domain;
 
+import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.boot.TrumpetServerConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.glassfish.jersey.media.sse.EventOutput;
@@ -7,6 +8,8 @@ import org.junit.Test;
 
 import java.util.Properties;
 
+import static com.jayway.trumpet.server.boot.TrumpetDomainConfig.TRUMPETER_PURGE_INTERVAL;
+import static com.jayway.trumpet.server.boot.TrumpetDomainConfig.TRUMPETER_STALE_THRESHOLD;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TrumpeterTest {
@@ -16,11 +19,6 @@ public class TrumpeterTest {
 
     @Test
     public void a_trumpeter_becomes_stale() throws Exception {
-
-        Properties props = new Properties();
-        //props.setProperty(TrumpetServerConfig.TRUMPETER_STALE_THRESHOLD, "10");
-        props.setProperty(TrumpetServerConfig.TRUMPETER_PURGE_INTERVAL, "100000");
-
         TrumpeterRepository repository = createTrumpeterRepository();
 
         Trumpeter trumpeter = repository.createTrumpeter(0D, 0D);
@@ -33,7 +31,7 @@ public class TrumpeterTest {
     }
 
     private TrumpeterRepository createTrumpeterRepository(Properties... props) {
-        TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class, props);
+        TrumpetDomainConfig config = ConfigFactory.create(TrumpetDomainConfig.class, props);
 
         return new TrumpeterRepository(config);
     }
@@ -42,8 +40,8 @@ public class TrumpeterTest {
     public void a_trumpeter_is_removed_from_repo_when_closed() {
 
         Properties props = new Properties();
-        props.setProperty(TrumpetServerConfig.TRUMPETER_STALE_THRESHOLD, "1000000");
-        props.setProperty(TrumpetServerConfig.TRUMPETER_PURGE_INTERVAL, "1000000");
+        props.setProperty(TRUMPETER_STALE_THRESHOLD, "1000000");
+        props.setProperty(TRUMPETER_PURGE_INTERVAL, "1000000");
 
         TrumpeterRepository repository = createTrumpeterRepository(props);
 
@@ -60,8 +58,8 @@ public class TrumpeterTest {
     public void a_trumpeter_is_removed_from_repo_when_output_closed() throws Exception {
 
         Properties props = new Properties();
-        props.setProperty(TrumpetServerConfig.TRUMPETER_STALE_THRESHOLD, "100000");
-        props.setProperty(TrumpetServerConfig.TRUMPETER_PURGE_INTERVAL, "100000");
+        props.setProperty(TRUMPETER_STALE_THRESHOLD, "100000");
+        props.setProperty(TRUMPETER_PURGE_INTERVAL, "100000");
 
         TrumpeterRepository repository = createTrumpeterRepository(props);
 
@@ -80,8 +78,8 @@ public class TrumpeterTest {
     public void stale_trumpeters_are_purged() throws Exception {
 
         Properties props = new Properties();
-        props.setProperty(TrumpetServerConfig.TRUMPETER_STALE_THRESHOLD, "1");
-        props.setProperty(TrumpetServerConfig.TRUMPETER_PURGE_INTERVAL, "10");
+        props.setProperty(TRUMPETER_STALE_THRESHOLD, "1");
+        props.setProperty(TRUMPETER_PURGE_INTERVAL, "10");
 
         TrumpeterRepository repository = createTrumpeterRepository(props);
 

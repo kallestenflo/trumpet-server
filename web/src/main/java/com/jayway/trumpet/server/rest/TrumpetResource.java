@@ -1,14 +1,13 @@
 package com.jayway.trumpet.server.rest;
 
 
-import com.jayway.trumpet.server.boot.TrumpetServerConfig;
+import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.domain.Location;
 import com.jayway.trumpet.server.domain.Trumpeter;
 import com.jayway.trumpet.server.domain.TrumpeterRepository;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +28,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import java.util.LongSummaryStatistics;
 import java.util.function.Supplier;
 
 @Path("/")
@@ -44,7 +42,7 @@ public class TrumpetResource {
 
     private final Supplier<WebApplicationException> trumpeterNotFound;
 
-    public TrumpetResource(TrumpetServerConfig config) {
+    public TrumpetResource(TrumpetDomainConfig config) {
         this.trumpeterRepository = new TrumpeterRepository(config);
         this.trumpeterNotFound = () -> new WebApplicationException("Trumpeter not found!", Response.Status.NOT_FOUND);
     }

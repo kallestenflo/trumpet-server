@@ -1,10 +1,9 @@
 package com.jayway.trumpet.server.domain;
 
-import com.jayway.trumpet.server.boot.TrumpetServerConfig;
+import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Timer;
@@ -14,9 +13,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class TrumpeterRepository {
+import static com.jayway.trumpet.server.domain.Tuple.tuple;
 
-    private static final long SECOND = 1000;
+public class TrumpeterRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpeterRepository.class);
 
@@ -32,7 +31,7 @@ public class TrumpeterRepository {
 
     private final Timer purgeStaleTrumpetersTimer = new Timer(true);
 
-    public TrumpeterRepository(TrumpetServerConfig config) {
+    public TrumpeterRepository(TrumpetDomainConfig config) {
 
         TimerTask purgeTask = new TimerTask() {
             @Override
@@ -74,13 +73,17 @@ public class TrumpeterRepository {
     }
 
     public Stream<Tuple<Trumpeter, Long>> findTrumpetersWithDistanceInRangeOf(Trumpeter trumpeter, long maxDistance){
-
+        /*
         return trumpeters.values().stream().filter(t -> t.inRange(trumpeter, maxDistance)).map(t -> {
 
             long distance = trumpeter.distanceTo(t, DistanceUnit.METERS).longValue();
 
-            return Tuple.create(t, distance);
+            return Tuple.tuple(t, distance);
         });
+        */
+        return trumpeters.values().stream()
+                .map(t -> tuple(t, trumpeter.distanceTo(t, DistanceUnit.METERS).longValue()))
+                .filter(tuple -> tuple.right.longValue() <= maxDistance);
     }
 
 
