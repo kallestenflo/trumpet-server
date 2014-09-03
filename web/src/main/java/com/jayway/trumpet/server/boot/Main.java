@@ -15,8 +15,8 @@ public class Main {
                 System.exit(0);
             }
         }
-        TrumpetService trumpetService = new TrumpetService(config);
-        trumpetService.start();
+        TrumpetServer trumpetServer = new TrumpetServer(config);
+        trumpetServer.start();
     }
 
     private static void docs(){

@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 
-public class TrumpetService {
+public class TrumpetServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrumpetService.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrumpetServer.class);
 
     private Server server;
 
-    public TrumpetService(TrumpetConfig config) {
+    public TrumpetServer(TrumpetConfig config) {
         this.server = configureServer(config);
     }
 
@@ -37,7 +37,7 @@ public class TrumpetService {
     public void start(){
         try {
             server.start();
-            logger.info("Trumpet service running on port: {}", getPort());
+            logger.info("Trumpet server running on port: {}", getPort());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

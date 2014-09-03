@@ -2,7 +2,7 @@ package com.jayway.fixture;
 
 import com.jayway.trumpet.server.boot.TrumpetConfig;
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.boot.TrumpetService;
+import com.jayway.trumpet.server.boot.TrumpetServer;
 import com.jayway.trumpet.server.boot.TrumpetServerConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.rules.TestRule;
@@ -13,7 +13,7 @@ import java.util.Properties;
 
 public class ServerRunningRule implements TestRule {
 
-    private final TrumpetService server;
+    private final TrumpetServer server;
 
     public ServerRunningRule() {
         this(0);
@@ -28,13 +28,13 @@ public class ServerRunningRule implements TestRule {
 
         TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class, props);
 
-        server = new TrumpetService(config);
+        server = new TrumpetServer(config);
     }
 
     public ServerRunningRule(Properties props) {
         TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class, props);
 
-        server = new TrumpetService(config);
+        server = new TrumpetServer(config);
     }
 
     public int port(){
