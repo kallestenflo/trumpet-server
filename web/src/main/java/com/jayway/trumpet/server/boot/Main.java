@@ -76,6 +76,9 @@ public class Main {
         System.out.println("2. Message to subscribe to is 'trumpet'");
         System.out.println("3. Message format is: ");
         System.out.println("{");
+        System.out.println("    \"id\": \"1\", ");
+        System.out.println("    \"timestamp\": 121212122, ");
+        System.out.println("    \"message\": \"This is noise from a trumpeteer!\", ");
         System.out.println("    \"message\": \"This is noise from a trumpeteer!\", ");
         System.out.println("    \"distanceFromSource\": 240");
         System.out.println("}");

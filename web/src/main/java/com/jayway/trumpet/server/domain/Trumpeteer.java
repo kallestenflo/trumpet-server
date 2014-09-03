@@ -8,13 +8,23 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
 public class Trumpeteer {
 
     private static final Logger logger = LoggerFactory.getLogger(Trumpeteer.class);
+
+    private static final Supplier<String> trumpetIdSupplier = new Supplier<String>() {
+        AtomicLong sequence = new AtomicLong();
+        @Override
+        public String get() {
+            return String.valueOf(sequence.incrementAndGet());
+        }
+    };
 
     public final String id;
     private final Consumer<Trumpeteer> closeHandler;
@@ -101,7 +111,7 @@ public class Trumpeteer {
     private OutboundEvent createTrumpet(String msg, long distanceFromSource) {
         return new OutboundEvent.Builder()
                 .name("trumpet")
-                .data(Trumpet.create(msg, distanceFromSource))
+                .data(Trumpet.create(trumpetIdSupplier.get(), msg, distanceFromSource))
                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
                 .build();
     }

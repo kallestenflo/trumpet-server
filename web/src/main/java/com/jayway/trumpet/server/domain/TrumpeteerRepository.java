@@ -21,11 +21,11 @@ public class TrumpeteerRepository {
 
     private final Map<String, Trumpeteer> trumpeteers = new ConcurrentHashMap<>();
 
-    private final Supplier<String> idSupplier = new Supplier<String>() {
-        AtomicLong al = new AtomicLong();
+    private final Supplier<String> trumpeteerIdSupplier = new Supplier<String>() {
+        AtomicLong sequence = new AtomicLong();
         @Override
         public String get() {
-            return String.valueOf(al.incrementAndGet());
+            return String.valueOf(sequence.incrementAndGet());
         }
     };
 
@@ -53,7 +53,7 @@ public class TrumpeteerRepository {
     public Trumpeteer createTrumpeteer(Double latitude,
                                        Double longitude){
 
-        Trumpeteer trumpeteer = new Trumpeteer(idSupplier.get(), Location.create(latitude, longitude), t -> trumpeteers.remove(t.id));
+        Trumpeteer trumpeteer = new Trumpeteer(trumpeteerIdSupplier.get(), Location.create(latitude, longitude), t -> trumpeteers.remove(t.id));
         trumpeteers.put(trumpeteer.id, trumpeteer);
         logger.debug("Trumpeteer with id {} created.", trumpeteer.id);
         return trumpeteer;
