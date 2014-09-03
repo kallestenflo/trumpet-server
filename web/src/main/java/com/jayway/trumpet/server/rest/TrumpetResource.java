@@ -28,7 +28,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import java.util.Collections;
 import java.util.function.Supplier;
+
+import static java.util.Collections.singletonMap;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -36,13 +39,14 @@ public class TrumpetResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpetResource.class);
 
-    private static final String DEFAULT_DISTANCE = "200";
-
     private final TrumpeteerRepository trumpeteerRepository;
 
     private final Supplier<WebApplicationException> trumpeteerNotFound;
 
+    private final TrumpetDomainConfig config;
+
     public TrumpetResource(TrumpetDomainConfig config) {
+        this.config = config;
         this.trumpeteerRepository = new TrumpeteerRepository(config);
         this.trumpeteerNotFound = () -> new WebApplicationException("Trumpeteer not found!", Response.Status.NOT_FOUND);
     }
@@ -70,11 +74,13 @@ public class TrumpetResource {
                              @NotNull @FormParam("latitude") Double latitude,
                              @NotNull @FormParam("longitude") Double longitude) {
 
-        trumpeteerRepository.findById(id)
+        Trumpeteer trumpeteer = trumpeteerRepository.findById(id)
                 .orElseThrow(trumpeteerNotFound)
                 .updateLocation(Location.create(latitude, longitude));
 
-        return Response.ok().build();
+        long trumpeteersInRange = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistancd());
+
+        return Response.ok(singletonMap("trumpeteersInRange", trumpeteersInRange)).build();
     }
 
     @POST
@@ -82,14 +88,15 @@ public class TrumpetResource {
     @Path("/trumpeteers/{id}/trumpet")
     public Response trumpet(@PathParam("id") String id,
                             @NotBlank @FormParam("message") String message,
-                            @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) Long distance) {
+                            @FormParam("distance") Long distance) {
+
+        if(distance == null){
+            distance = config.trumpeteerMaxDistancd();
+        }
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
-        //trumpeteerRepository.findTrumpeteersInRangeOf(trumpeteer, distance).forEach(t -> t.trumpet(msg, Long.MIN_VALUE));
-
-
-        trumpeteerRepository.findTrumpeteersWithDistanceInRangeOf(trumpeteer, distance)
+        trumpeteerRepository.findTrumpeteersInRangeOf(trumpeteer, distance)
                 .forEach(tuple -> tuple.left.trumpet(message, tuple.right));
 
         return Response.ok().build();

@@ -97,7 +97,7 @@ public class TrumpetClient {
         }
     }
 
-    public void updateLocation(Double latitude, Double longitude){
+    public long updateLocation(Double latitude, Double longitude){
         WebTarget target = client.target(locationUri);
 
         Form form = new Form();
@@ -107,8 +107,14 @@ public class TrumpetClient {
         Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
                 .put(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
 
+        Map<String, Object> entity = response.readEntity(Map.class);
+
+        Integer trumpeteersInRange = read(entity, "trumpeteersInRange");
+
         if(response.getStatus() != 200){
             throw new RuntimeException("Failed to update location!");
         }
+
+        return trumpeteersInRange.longValue();
     }
 }

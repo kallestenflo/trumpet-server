@@ -39,13 +39,12 @@ public class TrumpeteerRepository {
                 logger.debug("Purging stale trumpeteers...");
                 trumpeteers.forEach((key, trumpeteer) -> {
                     if (trumpeteer.isStale(config.trumpeteerStaleThreshold())) {
-                        logger.debug("Found stale trumpeteer to purge {}", trumpeteer.id);
+                        logger.debug("Purge trumpeteer {}", trumpeteer.id);
                         trumpeteer.close();
                     }
                 });
             }
         };
-
         purgeStaleTrumpeteersTimer.schedule(purgeTask, config.trumpeteerPurgeInterval(), config.trumpeteerPurgeInterval());
     }
 
@@ -55,7 +54,7 @@ public class TrumpeteerRepository {
 
         Trumpeteer trumpeteer = new Trumpeteer(trumpeteerIdSupplier.get(), Location.create(latitude, longitude), t -> trumpeteers.remove(t.id));
         trumpeteers.put(trumpeteer.id, trumpeteer);
-        logger.debug("Trumpeteer with id {} created.", trumpeteer.id);
+        logger.debug("Trumpeteer {} created.", trumpeteer.id);
         return trumpeteer;
     }
 
@@ -67,22 +66,15 @@ public class TrumpeteerRepository {
         return trumpeteer;
     }
 
-    public Stream<Trumpeteer> findTrumpeteersInRangeOf(Trumpeteer trumpeteer, long maxDistance){
+    public long countTrumpeteersInRangeOf(Trumpeteer trumpeteer, long maxDistance){
+        long inRange = trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, maxDistance)).count() - 1;
 
-        return trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, maxDistance));
+        logger.debug("There are {} trumpeteer(s) in range of trumpeteer {}", inRange, trumpeteer.id);
+
+        return inRange;
     }
 
-    public Stream<Tuple<Trumpeteer, Long>> findTrumpeteersWithDistanceInRangeOf(Trumpeteer trumpeteer, long maxDistance){
-        /*
-        return trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, maxDistance)).map(t -> {
-
-            long distance = trumpeteer.distanceTo(t, DistanceUnit.METERS).longValue();
-
-            return Tuple.tuple(t, distance);
-        });
-        */
-
-
+    public Stream<Tuple<Trumpeteer, Long>> findTrumpeteersInRangeOf(Trumpeteer trumpeteer, long maxDistance){
         return trumpeteers.values().stream()
                 .map(t -> tuple(t, trumpeteer.distanceTo(t, DistanceUnit.METERS).longValue()))
                 .filter(tuple -> tuple.right.longValue() <= maxDistance);

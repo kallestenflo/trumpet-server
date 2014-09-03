@@ -45,4 +45,17 @@ public class TrumpetIntegrationTest {
         assertThat(exception.response.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     }
 
+    @Test
+    public void number_of_trumpeteers_in_range_is_returned_when_location_is_updated() {
+        TrumpetClient trumpeteer1 = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+
+        long inRangeBefore = trumpeteer1.updateLocation(55.583985D, 12.957578D);
+
+        TrumpetClient trumpeteer2 = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+
+        long inRangeAfter = trumpeteer1.updateLocation(55.583985D, 12.957578D);
+
+        assertThat(inRangeAfter - inRangeBefore).isEqualTo(1);
+    }
+
 }
