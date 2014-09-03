@@ -59,10 +59,10 @@ public class Main {
         System.out.println("LOCATION");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl -X PUT --data \"latitude=55.583985&longitude=12.957578\" http://localhost:9191/api/trumpeteers/1/location");
+        System.out.println("curl -X PUT -H \"Accept: application/json\" --data \"latitude=55.583985&longitude=12.957578\" http://localhost:9191/api/trumpeteers/1/location");
         System.out.println("Response: Content-type: application/json");
         System.out.println("{");
-        System.out.println("    \"trumpeteersInRange\": 12, ");
+        System.out.println("    \"trumpeteersInRange\": 12 ");
         System.out.println("}");
         System.out.println("");
         System.out.println("-----------------------------------------------------------------------------------------------");
@@ -75,13 +75,12 @@ public class Main {
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("SUBSCRIBE");
         System.out.println("-----------------------------------------------------------------------------------------------");
-        System.out.println("1. Open EventSource to href");
+        System.out.println("1. Open EventSource to entry point link with rel 'subscribe' ");
         System.out.println("2. Message to subscribe to is 'trumpet'");
         System.out.println("3. Message format is: ");
         System.out.println("{");
         System.out.println("    \"id\": \"1\", ");
         System.out.println("    \"timestamp\": 121212122, ");
-        System.out.println("    \"message\": \"This is noise from a trumpeteer!\", ");
         System.out.println("    \"message\": \"This is noise from a trumpeteer!\", ");
         System.out.println("    \"distanceFromSource\": 240");
         System.out.println("}");
