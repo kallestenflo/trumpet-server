@@ -19,7 +19,7 @@ public class TrumpetIntegrationTest {
     private static final String MESSAGE = "Ho ho";
 
     @Test
-    public void a_trumpeter_receives_messages_when_in_range() {
+    public void a_trumpeteer_receives_messages_when_in_range() {
 
         TrumpetClient sender = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
         TrumpetClient inRange1 = TrumpetClient.create(server.port()).connect(55.584126D, 12.957406D);

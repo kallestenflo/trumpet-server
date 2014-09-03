@@ -23,8 +23,8 @@ public class ServerRunningRule implements TestRule {
 
         Properties props = new Properties();
         props.setProperty(TrumpetServerConfig.SERVER_HTTP_PORT, String.valueOf(port));
-        props.setProperty(TrumpetDomainConfig.TRUMPETER_STALE_THRESHOLD, "1000000");
-        props.setProperty(TrumpetDomainConfig.TRUMPETER_PURGE_INTERVAL, "1000000");
+        props.setProperty(TrumpetDomainConfig.TRUMPETEER_STALE_THRESHOLD, "1000000");
+        props.setProperty(TrumpetDomainConfig.TRUMPETEER_PURGE_INTERVAL, "1000000");
 
         TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class, props);
 

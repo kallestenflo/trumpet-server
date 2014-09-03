@@ -1,6 +1,6 @@
 package com.jayway.fixture;
 
-import com.jayway.trumpet.server.domain.TrumpetMessage;
+import com.jayway.trumpet.server.domain.Trumpet;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.sse.EventInput;
 import org.glassfish.jersey.media.sse.InboundEvent;
@@ -35,7 +35,7 @@ public class TrumpetClient {
     private String trumpetUri;
 
 
-    private final List<TrumpetMessage> messages = new CopyOnWriteArrayList<>();
+    private final List<Trumpet> messages = new CopyOnWriteArrayList<>();
 
 
     public static TrumpetClient create(int port){
@@ -68,9 +68,9 @@ public class TrumpetClient {
                     if (inboundEvent == null) {
                         break;
                     }
-                    TrumpetMessage trumpetMessage = inboundEvent.readData(TrumpetMessage.class);
+                    Trumpet trumpet = inboundEvent.readData(Trumpet.class);
 
-                    messages.add(trumpetMessage);
+                    messages.add(trumpet);
                 }
             }
         };
@@ -79,7 +79,7 @@ public class TrumpetClient {
         return this;
     }
 
-    public List<TrumpetMessage> messages(){
+    public List<Trumpet> messages(){
         return Collections.unmodifiableList(messages);
     }
 

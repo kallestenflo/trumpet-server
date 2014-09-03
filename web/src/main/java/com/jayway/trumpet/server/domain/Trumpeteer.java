@@ -8,27 +8,24 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
-public class Trumpeter {
+public class Trumpeteer {
 
-    private static final Logger logger = LoggerFactory.getLogger(Trumpeter.class);
+    private static final Logger logger = LoggerFactory.getLogger(Trumpeteer.class);
 
     public final String id;
-    private final Consumer<Trumpeter> closeHandler;
+    private final Consumer<Trumpeteer> closeHandler;
     private Location location;
-    private TrumpeterEventOutput output;
+    private TrumpeteerEventOutput output;
     private long lastAccessed;
 
 
-    public Trumpeter(String id,
-                     Location location,
-                     Consumer<Trumpeter> closeHandler) {
+    public Trumpeteer(String id,
+                      Location location,
+                      Consumer<Trumpeteer> closeHandler) {
 
         requireNonNull(id, "Id can not be null.");
         requireNonNull(location, "Location can not be null.");
@@ -53,14 +50,14 @@ public class Trumpeter {
         requireNonNull(location, "Location can not be null.");
 
         this.location = newLocation;
-        logger.debug("Trumpeter {} updated location to latitude: {}, longitude: {}", id, this.location.latitude, this.location.longitude);
+        logger.debug("Trumpeteer {} updated location to latitude: {}, longitude: {}", id, this.location.latitude, this.location.longitude);
     }
 
     public void trumpet(String message, long distanceFromSource) {
         requireNonNull(message, "Message can not be null.");
 
         try {
-            logger.debug("Pushing trumpet to trumpeter : {}, latitude: {}, longitude: {}. Distance from source: {} meters", id, location.latitude, location.longitude, distanceFromSource);
+            logger.debug("Pushing trumpet to trumpeteer : {}, latitude: {}, longitude: {}. Distance from source: {} meters", id, location.latitude, location.longitude, distanceFromSource);
             output.write(createTrumpet(message, distanceFromSource));
         } catch (IOException e) {
             close();
@@ -71,12 +68,12 @@ public class Trumpeter {
         if (output.isClosed()) {
             output = createEventOutput();
         }
-        logger.debug("Trumpeter {} subscription created.", id);
+        logger.debug("Trumpeteer {} subscription created.", id);
         return this.output;
     }
 
-    private TrumpeterEventOutput createEventOutput() {
-        return new TrumpeterEventOutput();
+    private TrumpeteerEventOutput createEventOutput() {
+        return new TrumpeteerEventOutput();
     }
 
     void close() {
@@ -84,19 +81,19 @@ public class Trumpeter {
     }
 
 
-    public boolean inRange(Trumpeter other, long maxDistance) {
+    public boolean inRange(Trumpeteer other, long maxDistance) {
 
-        requireNonNull(other, "Other trumpeter can not be null.");
+        requireNonNull(other, "Other trumpeteer can not be null.");
         requirePositive(maxDistance, "Distance must be greater than 0.");
 
         Double distanceInMeters = this.location.distanceTo(other.location, DistanceUnit.METERS);
 
-        logger.debug("Distance between trumpeter {} and trumpeter {} is {} meters. Max distance is {}", id, other.id, distanceInMeters.intValue(), maxDistance);
+        logger.debug("Distance between trumpeteer {} and trumpeteer {} is {} meters. Max distance is {}", id, other.id, distanceInMeters.intValue(), maxDistance);
 
         return distanceInMeters.longValue() <= maxDistance;
     }
 
-    public Double distanceTo(Trumpeter other, DistanceUnit distanceUnit){
+    public Double distanceTo(Trumpeteer other, DistanceUnit distanceUnit){
         return this.location.distanceTo(other.location, distanceUnit);
     }
 
@@ -104,7 +101,7 @@ public class Trumpeter {
     private OutboundEvent createTrumpet(String msg, long distanceFromSource) {
         return new OutboundEvent.Builder()
                 .name("trumpet")
-                .data(TrumpetMessage.create(msg, distanceFromSource))
+                .data(Trumpet.create(msg, distanceFromSource))
                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
                 .build();
     }
@@ -115,7 +112,7 @@ public class Trumpeter {
         }
     }
 
-    private class TrumpeterEventOutput extends EventOutput {
+    private class TrumpeteerEventOutput extends EventOutput {
 
         boolean closed = false;
 
@@ -123,7 +120,7 @@ public class Trumpeter {
         public void close() {
             try {
                 if(!closed){
-                    closeHandler.accept(Trumpeter.this);
+                    closeHandler.accept(Trumpeteer.this);
                 }
                 super.close();
                 closed = true;

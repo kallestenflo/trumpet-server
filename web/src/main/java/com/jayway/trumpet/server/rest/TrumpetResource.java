@@ -3,8 +3,8 @@ package com.jayway.trumpet.server.rest;
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.domain.Location;
-import com.jayway.trumpet.server.domain.Trumpeter;
-import com.jayway.trumpet.server.domain.TrumpeterRepository;
+import com.jayway.trumpet.server.domain.Trumpeteer;
+import com.jayway.trumpet.server.domain.TrumpeteerRepository;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.hibernate.validator.constraints.NotBlank;
@@ -38,13 +38,13 @@ public class TrumpetResource {
 
     private static final String DEFAULT_DISTANCE = "200";
 
-    private final TrumpeterRepository trumpeterRepository;
+    private final TrumpeteerRepository trumpeteerRepository;
 
-    private final Supplier<WebApplicationException> trumpeterNotFound;
+    private final Supplier<WebApplicationException> trumpeteerNotFound;
 
     public TrumpetResource(TrumpetDomainConfig config) {
-        this.trumpeterRepository = new TrumpeterRepository(config);
-        this.trumpeterNotFound = () -> new WebApplicationException("Trumpeter not found!", Response.Status.NOT_FOUND);
+        this.trumpeteerRepository = new TrumpeteerRepository(config);
+        this.trumpeteerNotFound = () -> new WebApplicationException("Trumpeteer not found!", Response.Status.NOT_FOUND);
     }
 
     @GET
@@ -52,26 +52,26 @@ public class TrumpetResource {
                                @NotNull @QueryParam("latitude") Double latitude,
                                @NotNull @QueryParam("longitude") Double longitude) {
 
-        Trumpeter trumpeter = trumpeterRepository.createTrumpeter(latitude, longitude);
+        Trumpeteer trumpeteer = trumpeteerRepository.createTrumpeteer(latitude, longitude);
 
         HalRepresentation entryPoint = new HalRepresentation();
-        entryPoint.put("trumpeterId", trumpeter.id);
-        entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("subscribe").build());
-        entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("location").build());
-        entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeters").path(trumpeter.id).path("trumpet").build());
+        entryPoint.put("trumpeteerId", trumpeteer.id);
+        entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscribe").build());
+        entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
+        entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpet").build());
 
         return Response.ok(entryPoint).build();
     }
 
     @PUT
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("trumpeters/{id}/location")
+    @Path("trumpeteers/{id}/location")
     public Response location(@PathParam("id") String id,
                              @NotNull @FormParam("latitude") Double latitude,
                              @NotNull @FormParam("longitude") Double longitude) {
 
-        trumpeterRepository.findById(id)
-                .orElseThrow(trumpeterNotFound)
+        trumpeteerRepository.findById(id)
+                .orElseThrow(trumpeteerNotFound)
                 .updateLocation(Location.create(latitude, longitude));
 
         return Response.ok().build();
@@ -79,29 +79,29 @@ public class TrumpetResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("/trumpeters/{id}/trumpet")
+    @Path("/trumpeteers/{id}/trumpet")
     public Response trumpet(@PathParam("id") String id,
                             @NotBlank @FormParam("message") String message,
                             @FormParam("distance") @DefaultValue(DEFAULT_DISTANCE) Long distance) {
 
-        Trumpeter trumpeter = trumpeterRepository.findById(id).orElseThrow(trumpeterNotFound);
+        Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
-        //trumpeterRepository.findTrumpetersInRangeOf(trumpeter, distance).forEach(t -> t.trumpet(msg, Long.MIN_VALUE));
+        //trumpeteerRepository.findTrumpeteersInRangeOf(trumpeteer, distance).forEach(t -> t.trumpet(msg, Long.MIN_VALUE));
 
 
-        trumpeterRepository.findTrumpetersWithDistanceInRangeOf(trumpeter, distance)
+        trumpeteerRepository.findTrumpeteersWithDistanceInRangeOf(trumpeteer, distance)
                 .forEach(tuple -> tuple.left.trumpet(message, tuple.right));
 
         return Response.ok().build();
     }
 
     @GET
-    @Path("/trumpeters/{id}/subscribe")
+    @Path("/trumpeteers/{id}/subscribe")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public EventOutput subscribe(final @PathParam("id") String id) {
 
-        return trumpeterRepository.findById(id)
-                .orElseThrow(trumpeterNotFound)
+        return trumpeteerRepository.findById(id)
+                .orElseThrow(trumpeteerNotFound)
                 .subscribe();
     }
 }
