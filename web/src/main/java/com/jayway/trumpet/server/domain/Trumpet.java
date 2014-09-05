@@ -24,4 +24,14 @@ public class Trumpet {
     public static Trumpet create(String id, String message, long distanceFromSource){
         return new Trumpet(id, System.currentTimeMillis(), message, distanceFromSource);
     }
+
+    @Override
+    public String toString() {
+        return "Trumpet{" +
+                "id='" + id + '\'' +
+                ", timestamp=" + timestamp +
+                ", message='" + message + '\'' +
+                ", distanceFromSource=" + distanceFromSource +
+                '}';
+    }
 }

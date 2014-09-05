@@ -9,7 +9,7 @@ public interface TrumpetDomainConfig extends Config {
     static final String MAX_TRUMPET_DISTANCE = "trumpeteer.maxDistance";
 
     @Config.Key(TRUMPETEER_STALE_THRESHOLD)
-    @Config.DefaultValue("3600000")   //= 1000 * 60 * 60 = 1h
+    @Config.DefaultValue("300000")   //= 1000 * 60 * 5 = 3min
     long trumpeteerStaleThreshold();
 
     @Config.Key(TRUMPETEER_PURGE_INTERVAL)
@@ -18,6 +18,6 @@ public interface TrumpetDomainConfig extends Config {
 
     @Config.Key(MAX_TRUMPET_DISTANCE)
     @Config.DefaultValue("200")
-    long trumpeteerMaxDistancd();
+    long trumpeteerMaxDistance();
 
 }

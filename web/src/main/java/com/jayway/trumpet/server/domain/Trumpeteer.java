@@ -28,7 +28,7 @@ public class Trumpeteer {
 
     public final String id;
     private final Consumer<Trumpeteer> closeHandler;
-    private Location location;
+    public Location location;
     private TrumpeteerEventOutput output;
     private long lastAccessed;
 
@@ -49,6 +49,15 @@ public class Trumpeteer {
     }
 
     boolean isStale(long staleThreshold) {
+        logger.debug("-----------------------------------------");
+        logger.debug("trumpeteer: {}", id);
+        logger.debug("lastAccessed: {}", lastAccessed);
+        logger.debug("staleThreshold: {}", staleThreshold);
+        logger.debug("lastAccessed + staleThreshold: {}", lastAccessed + staleThreshold);
+        logger.debug("currentTimeMillis: {}", System.currentTimeMillis());
+        logger.debug("stale: {}", (lastAccessed + staleThreshold) < System.currentTimeMillis());
+        logger.debug("isClosed: {}", output.isClosed());
+
         return ((lastAccessed + staleThreshold) < System.currentTimeMillis()) || output.isClosed();
     }
 

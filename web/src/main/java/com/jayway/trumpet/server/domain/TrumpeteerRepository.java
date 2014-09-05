@@ -36,13 +36,13 @@ public class TrumpeteerRepository {
         TimerTask purgeTask = new TimerTask() {
             @Override
             public void run() {
-                logger.debug("Purging stale trumpeteers...");
                 trumpeteers.forEach((key, trumpeteer) -> {
                     if (trumpeteer.isStale(config.trumpeteerStaleThreshold())) {
                         logger.debug("Purge trumpeteer {}", trumpeteer.id);
                         trumpeteer.close();
                     }
                 });
+                logger.debug("Purging stale trumpeteers...");
             }
         };
         purgeStaleTrumpeteersTimer.schedule(purgeTask, config.trumpeteerPurgeInterval(), config.trumpeteerPurgeInterval());
@@ -78,6 +78,10 @@ public class TrumpeteerRepository {
         return trumpeteers.values().stream()
                 .map(t -> tuple(t, trumpeteer.distanceTo(t, DistanceUnit.METERS).longValue()))
                 .filter(tuple -> tuple.right.longValue() <= maxDistance);
+    }
+
+    public Stream<Trumpeteer> findAll(){
+        return trumpeteers.values().stream();
     }
 
 
