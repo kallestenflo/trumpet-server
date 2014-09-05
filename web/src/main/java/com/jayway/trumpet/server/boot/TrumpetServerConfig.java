@@ -21,7 +21,7 @@ public interface TrumpetServerConfig extends Config {
     String hostname();
 
     @Key(SERVER_RESOURCE_BASE)
-    @DefaultValue("-classpath")
+    @DefaultValue("classpath")
     String resourceBase();
 
 

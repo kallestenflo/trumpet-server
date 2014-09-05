@@ -69,7 +69,7 @@ public class TrumpetServer {
             webAppContext.setServer(configServer);
             webAppContext.setContextPath("/");
             if(config.resourceBase().startsWith("classpath")){
-                webAppContext.setResourceBase(getClass().getResource("/www").toExternalForm());
+                webAppContext.setResourceBase(getClass().getResource("/webapp").toExternalForm());
             } else {
                 webAppContext.setResourceBase(config.resourceBase());
             }
