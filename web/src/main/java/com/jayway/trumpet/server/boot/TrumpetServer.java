@@ -1,5 +1,6 @@
 package com.jayway.trumpet.server.boot;
 
+import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetBroadcastServiceImpl;
 import com.jayway.trumpet.server.rest.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -99,7 +100,8 @@ public class TrumpetServer {
         resourceConfig.register(SseFeature.class);
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
-        resourceConfig.register(new TrumpetResource(config));
+        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(config);
+        resourceConfig.register(new TrumpetResource(config, trumpetBroadcastService, trumpetBroadcastService));
 
         return new ServletContainer(resourceConfig);
     }

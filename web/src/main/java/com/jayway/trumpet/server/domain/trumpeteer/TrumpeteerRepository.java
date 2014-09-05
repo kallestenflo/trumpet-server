@@ -1,22 +1,15 @@
-package com.jayway.trumpet.server.domain.model.trumpeteer;
+package com.jayway.trumpet.server.domain.trumpeteer;
 
-import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.domain.model.shared.DistanceUnit;
-import com.jayway.trumpet.server.domain.model.shared.Location;
-import com.jayway.trumpet.server.domain.model.shared.Tuple;
+import com.jayway.trumpet.server.domain.location.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import static com.jayway.trumpet.server.domain.model.shared.Tuple.tuple;
 
 public class TrumpeteerRepository {
 
@@ -31,25 +24,6 @@ public class TrumpeteerRepository {
             return String.valueOf(sequence.incrementAndGet());
         }
     };
-
-    private final Timer purgeStaleTrumpeteersTimer = new Timer(true);
-
-    public TrumpeteerRepository(TrumpetDomainConfig config) {
-
-        TimerTask purgeTask = new TimerTask() {
-            @Override
-            public void run() {
-                trumpeteers.forEach((key, trumpeteer) -> {
-                    if (trumpeteer.isStale(config.trumpeteerStaleThreshold())) {
-                        logger.debug("Purge trumpeteer {}", trumpeteer.id);
-                        trumpeteer.close();
-                    }
-                });
-                logger.debug("Purging stale trumpeteers...");
-            }
-        };
-        purgeStaleTrumpeteersTimer.schedule(purgeTask, config.trumpeteerPurgeInterval(), config.trumpeteerPurgeInterval());
-    }
 
 
     public Trumpeteer createTrumpeteer(Double latitude,
@@ -77,11 +51,7 @@ public class TrumpeteerRepository {
         return inRange;
     }
 
-    public Stream<Tuple<Trumpeteer, Long>> findTrumpeteersInRangeOf(Trumpeteer trumpeteer, long maxDistance){
-        return trumpeteers.values().stream()
-                .map(t -> tuple(t, trumpeteer.distanceTo(t, DistanceUnit.METERS).longValue()))
-                .filter(tuple -> tuple.right.longValue() <= maxDistance);
-    }
+
 
     public Stream<Trumpeteer> findAll(){
         return trumpeteers.values().stream();

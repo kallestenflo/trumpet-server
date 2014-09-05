@@ -1,6 +1,6 @@
 package com.jayway.trumpet.server.rest;
 
-import com.jayway.trumpet.server.domain.model.trumpeteer.Trumpet;
+import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 

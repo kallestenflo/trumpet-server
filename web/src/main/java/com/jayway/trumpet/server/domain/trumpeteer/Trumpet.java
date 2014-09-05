@@ -1,4 +1,4 @@
-package com.jayway.trumpet.server.domain.model.trumpeteer;
+package com.jayway.trumpet.server.domain.trumpeteer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

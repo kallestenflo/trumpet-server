@@ -1,7 +1,7 @@
 package com.jayway.trumpet.server.domain;
 
-import com.jayway.trumpet.server.domain.model.shared.DistanceUnit;
-import com.jayway.trumpet.server.domain.model.shared.Location;
+import com.jayway.trumpet.server.domain.location.DistanceUnit;
+import com.jayway.trumpet.server.domain.location.Location;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

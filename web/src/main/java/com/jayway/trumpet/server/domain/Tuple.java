@@ -1,4 +1,4 @@
-package com.jayway.trumpet.server.domain.model.shared;
+package com.jayway.trumpet.server.domain;
 
 public class Tuple<LEFT, RIGHT> {
 
