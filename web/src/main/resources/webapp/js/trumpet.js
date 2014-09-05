@@ -15,6 +15,8 @@ $(function() {
                     var json = JSON.parse(event.data);
                     $('#trumpets').append("<div class='alert alert-info'>" + json.message + " (" + json.distanceFromSource + " meters)</div>");
 
+                    var msg = new SpeechSynthesisUtterance(json.message);
+                    window.speechSynthesis.speak(msg);
 
                 }, false);
             }
