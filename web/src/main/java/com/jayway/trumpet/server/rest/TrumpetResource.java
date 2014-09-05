@@ -2,9 +2,9 @@ package com.jayway.trumpet.server.rest;
 
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.domain.Location;
-import com.jayway.trumpet.server.domain.Trumpeteer;
-import com.jayway.trumpet.server.domain.TrumpeteerRepository;
+import com.jayway.trumpet.server.domain.model.shared.Location;
+import com.jayway.trumpet.server.domain.model.trumpeteer.Trumpeteer;
+import com.jayway.trumpet.server.domain.model.trumpeteer.TrumpeteerRepository;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.hibernate.validator.constraints.NotBlank;
@@ -31,8 +31,6 @@ import javax.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 

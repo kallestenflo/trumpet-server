@@ -1,6 +1,6 @@
 package com.jayway.fixture;
 
-import com.jayway.trumpet.server.domain.Trumpet;
+import com.jayway.trumpet.server.domain.model.trumpeteer.Trumpet;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.sse.EventInput;
 import org.glassfish.jersey.media.sse.InboundEvent;

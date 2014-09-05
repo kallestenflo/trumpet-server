@@ -1,6 +1,9 @@
-package com.jayway.trumpet.server.domain;
+package com.jayway.trumpet.server.domain.model.trumpeteer;
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
+import com.jayway.trumpet.server.domain.model.shared.DistanceUnit;
+import com.jayway.trumpet.server.domain.model.shared.Location;
+import com.jayway.trumpet.server.domain.model.shared.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static com.jayway.trumpet.server.domain.Tuple.tuple;
+import static com.jayway.trumpet.server.domain.model.shared.Tuple.tuple;
 
 public class TrumpeteerRepository {
 

@@ -1,5 +1,7 @@
-package com.jayway.trumpet.server.domain;
+package com.jayway.trumpet.server.domain.model.trumpeteer;
 
+import com.jayway.trumpet.server.domain.model.shared.DistanceUnit;
+import com.jayway.trumpet.server.domain.model.shared.Location;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.slf4j.Logger;
@@ -48,7 +50,7 @@ public class Trumpeteer {
         updateLastAccessed();
     }
 
-    boolean isStale(long staleThreshold) {
+    public boolean isStale(long staleThreshold) {
         logger.debug("-----------------------------------------");
         logger.debug("trumpeteer: {}", id);
         logger.debug("lastAccessed: {}", lastAccessed);
@@ -97,7 +99,7 @@ public class Trumpeteer {
         return new TrumpeteerEventOutput();
     }
 
-    void close() {
+    public void close() {
         output.close();
     }
 

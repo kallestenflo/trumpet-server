@@ -1,6 +1,8 @@
 package com.jayway.trumpet.server.domain;
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
+import com.jayway.trumpet.server.domain.model.trumpeteer.Trumpeteer;
+import com.jayway.trumpet.server.domain.model.trumpeteer.TrumpeteerRepository;
 import org.aeonbits.owner.ConfigFactory;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.junit.Test;

@@ -1,7 +1,6 @@
 package com.jayway.trumpet.server.rest;
 
-import com.jayway.trumpet.server.domain.Trumpet;
-import com.jayway.trumpet.server.domain.TrumpetPublisher;
+import com.jayway.trumpet.server.domain.model.trumpeteer.Trumpet;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 
@@ -11,7 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-public class TrumpeteerEventOutput extends EventOutput implements TrumpetPublisher {
+public class TrumpeteerEventOutput extends EventOutput {
 
     private static final Supplier<String> trumpetIdSupplier = new Supplier<String>() {
         AtomicLong sequence = new AtomicLong();
@@ -30,7 +29,6 @@ public class TrumpeteerEventOutput extends EventOutput implements TrumpetPublish
         }
     }
 
-    @Override
     public void publish(Trumpet trumpet) {
         try {
             write(createTrumpet(trumpet.message, trumpet.distanceFromSource));
