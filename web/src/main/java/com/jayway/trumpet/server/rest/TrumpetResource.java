@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -41,7 +42,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.singletonMap;
 
 @Path("/")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces({MediaType.APPLICATION_JSON, "application/HAL+json"})
 public class TrumpetResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpetResource.class);
@@ -72,9 +73,10 @@ public class TrumpetResource {
 
         HalRepresentation entryPoint = new HalRepresentation();
         entryPoint.put("trumpeteerId", trumpeteer.id);
-        entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscribe").build());
+        entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscription").build());
         entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
         entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpet").build());
+        entryPoint.addLink("self", uriInfo.getRequestUri());
 
         return Response.ok(entryPoint).build();
     }
@@ -110,9 +112,9 @@ public class TrumpetResource {
     }
 
     @GET
-    @Path("/trumpeteers/{id}/subscribe")
+    @Path("/trumpeteers/{id}/subscription")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
-    public EventOutput subscribe(final @PathParam("id") String id) {
+    public EventOutput subscription(final @PathParam("id") String id) {
 
         EventOutput channel = new EventOutput();
         Subscriber subscriber = trumpeteerRepository.findById(id)

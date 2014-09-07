@@ -50,9 +50,10 @@ public class Main {
         System.out.println("{");
         System.out.println("   \"trumpeteerId\" : \"1\",");
         System.out.println("   \"_links\": {");
-        System.out.println("        \"location\": \"http://localhost:9191/api/trumpeteers/1/location\",");
-        System.out.println("        \"subscribe\": \"http://localhost:9191/api/trumpeteers/1/subscribe\",");
-        System.out.println("        \"trumpet\": \"http://localhost:9191/api/trumpeteers/1/trumpet\"");
+        System.out.println("        \"location\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/location\" },");
+        System.out.println("        \"subscribe\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/subscription\" },");
+        System.out.println("        \"trumpet\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/trumpet\" }, ");
+        System.out.println("        \"self\": { \"href\" : \"http://localhost:9191/api/?latitude=55.583985&longitude=12.957578\" }");
         System.out.println("    }");
         System.out.println("}");
         System.out.println("-----------------------------------------------------------------------------------------------");

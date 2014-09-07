@@ -7,8 +7,8 @@ $(function() {
         $.ajax({
             url: "/api/?latitude=" + position.coords.latitude + "&longitude=" + position.coords.longitude,
             success: function(data){
-                window.subscribeUrl = data['_links']["subscribe"];
-                window.trumpetUrl = data['_links']["trumpet"];
+                window.subscribeUrl = data['_links']["subscribe"]["href"];
+                window.trumpetUrl = data['_links']["trumpet"]["href"];
 
                 window.eventSource = new EventSource(subscribeUrl);
                 window.eventSource.addEventListener('trumpet', function(event) {

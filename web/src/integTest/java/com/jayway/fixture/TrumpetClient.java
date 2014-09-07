@@ -53,9 +53,9 @@ public class TrumpetClient {
 
         Map<String, Object> ep = target.request().get(Map.class);
 
-        locationUri = read(ep, "_links.location");
-        subscribeUri = read(ep, "_links.subscribe");
-        trumpetUri = read(ep, "_links.trumpet");
+        locationUri = read(ep, "_links.location.href");
+        subscribeUri = read(ep, "_links.subscribe.href");
+        trumpetUri = read(ep, "_links.trumpet.href");
 
         Thread thread = new Thread(){
             @Override
