@@ -31,6 +31,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,9 +90,9 @@ public class TrumpetResource {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id)
                 .orElseThrow(trumpeteerNotFound)
-                .updateLocation(Location.create(latitude, longitude));
+                .updateLocation(Location.location(latitude, longitude));
 
-        long trumpeteersInRange = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistance());
+        int trumpeteersInRange = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistance());
 
         return Response.ok(singletonMap("trumpeteersInRange", trumpeteersInRange)).build();
     }
@@ -99,7 +100,8 @@ public class TrumpetResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeteers/{id}/trumpets")
-    public Response trumpet(@PathParam("id") String id,
+    public Response trumpet(@Context UriInfo uriInfo,
+                            @PathParam("id") String id,
                             @FormParam("message") @NotBlank String message,
                             @FormParam("distance") @Min(1) Integer distance) {
 

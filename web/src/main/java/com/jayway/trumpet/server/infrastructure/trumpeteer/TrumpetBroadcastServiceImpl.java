@@ -8,6 +8,8 @@ import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
 import com.jayway.trumpet.server.rest.HalRepresentation;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 
@@ -19,6 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, TrumpetSubscriptionService {
+
+    private static final Logger logger = LoggerFactory.getLogger(TrumpetBroadcastServiceImpl.class);
 
     private final Map<String, Subscription> subscribers = new ConcurrentHashMap<>();
 
@@ -49,6 +53,8 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     @Override
     public void broadcast(Trumpet trumpet) {
         try {
+            logger.debug("Broadcasting trumpet");
+
             subscribers.getOrDefault(trumpet.receiver.id, NOOP_SUBSCRIPTION).write(trumpet);
         } catch (IOException e) {
             subscribers.remove(trumpet.receiver.id);

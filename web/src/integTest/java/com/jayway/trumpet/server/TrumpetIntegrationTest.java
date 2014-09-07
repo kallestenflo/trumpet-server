@@ -34,7 +34,6 @@ public class TrumpetIntegrationTest {
         await().until(() -> !inRange1.messages().isEmpty());
         await().until(() -> !inRange2.messages().isEmpty());
 
-
         assertThat(JsonPath.<List<String>>read(inRange1.messages(), "[*].message")).containsExactly(MESSAGE);
         assertThat(JsonPath.<List<String>>read(inRange2.messages(), "[*].message")).containsExactly(MESSAGE);
         assertThat(outOfRange1.messages().isEmpty()).isTrue();

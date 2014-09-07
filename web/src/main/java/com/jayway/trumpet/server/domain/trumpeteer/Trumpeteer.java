@@ -42,17 +42,28 @@ public class Trumpeteer {
         return this;
     }
 
-    public void trumpet(String message, Optional<Integer> distanceInMeters, Stream<Trumpeteer> candidates, Consumer<Trumpet> trumpetBroadcaster) {
+    public void trumpet(String message,
+                        Optional<Integer> distanceInMeters,
+                        Stream<Trumpeteer> candidates,
+                        Consumer<Trumpet> trumpetBroadcaster) {
+
+        requireNonNull(message, "message can not be null.");
+        requireNonNull(distanceInMeters, "distanceInMeters can not be null.");
+        requireNonNull(candidates, "candidates can not be null.");
+        requireNonNull(trumpetBroadcaster, "trumpetBroadcaster can not be null.");
+
+
+        String id = UUID.randomUUID().toString();
+        long timestamp = System.currentTimeMillis();
         int distance = Math.min(distanceInMeters.orElse(200), 200);
-        candidates //.filter(t -> !t.id.equals(id))
-                //.map(t -> Tuple.tuple(t.id, Trumpet.create(UUID.randomUUID().toString(), message, t.distanceTo(this, DistanceUnit.METERS).longValue())))
-                .map(t -> createTrumpet(t, message))
+
+        candidates.map(t -> createTrumpet(t, id, timestamp, message))
                 .filter(t -> t.distanceFromSource <= distance)
                 .forEach(trumpetBroadcaster);
     }
 
-    private Trumpet createTrumpet(Trumpeteer receiver, String message){
-        return Trumpet.create(this, receiver, UUID.randomUUID().toString(), message, this.distanceTo(receiver, DistanceUnit.METERS).longValue());
+    private Trumpet createTrumpet(Trumpeteer receiver, String id, long timestamp, String message){
+        return Trumpet.create(this, receiver, id, message, this.distanceTo(receiver, DistanceUnit.METERS).intValue(), timestamp);
     }
 
     public boolean inRange(Trumpeteer other, long maxDistance) {

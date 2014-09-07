@@ -7,7 +7,7 @@ public class Location {
     public final Double latitude;
     public final Double longitude;
 
-    public static Location create(Double latitude, Double longitude){
+    public static Location location(Double latitude, Double longitude){
         return new Location(latitude, longitude);
     }
 

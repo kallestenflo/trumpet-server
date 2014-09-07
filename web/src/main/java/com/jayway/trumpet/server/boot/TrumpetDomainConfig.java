@@ -18,6 +18,6 @@ public interface TrumpetDomainConfig extends Config {
 
     @Config.Key(MAX_TRUMPET_DISTANCE)
     @Config.DefaultValue("200")
-    long trumpeteerMaxDistance();
+    int trumpeteerMaxDistance();
 
 }

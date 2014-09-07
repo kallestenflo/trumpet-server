@@ -19,7 +19,7 @@ public class TrumpeteerTest {
     }
 
     private TrumpeteerRepository createTrumpeteerRepository(Properties... props) {
-        TrumpetDomainConfig config = ConfigFactory.create(TrumpetDomainConfig.class, props);
+        TrumpetDomainConfig config = ConfigFactory.location(TrumpetDomainConfig.class, props);
 
         return new TrumpeteerRepository(config);
     }
