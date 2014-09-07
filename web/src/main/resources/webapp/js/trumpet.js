@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
 
     function geoLocationSuccess(position) {
         console.log(position.coords.latitude);
@@ -6,12 +6,12 @@ $(function() {
 
         $.ajax({
             url: "/api/?latitude=" + position.coords.latitude + "&longitude=" + position.coords.longitude,
-            success: function(data){
+            success: function (data) {
                 window.subscribeUrl = data['_links']["subscribe"]["href"];
                 window.trumpetUrl = data['_links']["trumpet"]["href"];
 
                 window.eventSource = new EventSource(subscribeUrl);
-                window.eventSource.addEventListener('trumpet', function(event) {
+                window.eventSource.addEventListener('trumpet', function (event) {
                     var json = JSON.parse(event.data);
                     $('#trumpets').prepend("<div class='alert alert-info'>" + json.message + " (" + json.distanceFromSource + " meters)</div>");
 
@@ -23,12 +23,12 @@ $(function() {
         });
     }
 
-    $('#trumpet-btn').click(function(){
+    $('#trumpet-btn').click(function () {
         $.ajax({
             url: window.trumpetUrl,
             type: 'POST',
             data: {
-                message : $('#message').val()
+                message: $('#message').val()
             }
         });
         $('#message').val("").focus();
@@ -41,5 +41,11 @@ $(function() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(geoLocationSuccess, geoLocationError);
     }
+
+    $("#message").keypress(function (e) {
+        if (e.which == 13) {
+            $('#trumpet-btn').click();
+        }
+    });
 
 });
