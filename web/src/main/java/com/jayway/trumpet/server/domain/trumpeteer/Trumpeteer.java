@@ -21,29 +21,20 @@ public class Trumpeteer {
 
 
     public final String id;
-    private final Consumer<Trumpeteer> closeHandler;
     public Location location;
-    private long lastAccessed;
 
 
     public Trumpeteer(String id,
-                      Location location,
-                      Consumer<Trumpeteer> closeHandler) {
+                      Location location) {
 
         requireNonNull(id, "Id can not be null.");
         requireNonNull(location, "Location can not be null.");
-        requireNonNull(closeHandler, "Close handler can not be null.");
 
-        this.closeHandler = closeHandler;
         this.id = id;
         this.location = location;
-        updateLastAccessed();
     }
 
 
-    void updateLastAccessed() {
-        this.lastAccessed = System.currentTimeMillis();
-    }
 
     public Trumpeteer updateLocation(Location newLocation) {
         requireNonNull(location, "Location can not be null.");
@@ -56,7 +47,7 @@ public class Trumpeteer {
 
     public void trumpet(String message, Optional<Integer> distanceInMeters, Stream<Trumpeteer> candidates, Consumer<Tuple<String, Trumpet>> trumpetBroadcaster) {
         int distance = Math.min(distanceInMeters.orElse(200), 200);
-        candidates.filter(t -> !t.id.equals(id))
+        candidates //.filter(t -> !t.id.equals(id))
                 .map(t -> Tuple.tuple(t.id, Trumpet.create(UUID.randomUUID().toString(), message, t.distanceTo(this, DistanceUnit.METERS).longValue())))
                 .filter(t -> t.right.distanceFromSource <= distance)
                 .forEach(trumpetBroadcaster);

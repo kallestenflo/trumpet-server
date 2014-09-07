@@ -74,7 +74,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
             this.lastAccessed = new AtomicLong(lastAccessed);
         }
 
-        public void updateLastAccessedTo(long newLastAccess) {
+        private void updateLastAccessedTo(long newLastAccess) {
             lastAccessed.set(newLastAccess);
         }
 
@@ -85,6 +85,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
                     .build();
             eventOutput.write(outboundEvent);
+            updateLastAccessedTo(System.currentTimeMillis());
         }
 
         public boolean isStale(long staleThreshold) {

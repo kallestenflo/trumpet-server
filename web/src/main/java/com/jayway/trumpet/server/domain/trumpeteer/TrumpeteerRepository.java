@@ -29,18 +29,14 @@ public class TrumpeteerRepository {
     public Trumpeteer createTrumpeteer(Double latitude,
                                        Double longitude){
 
-        Trumpeteer trumpeteer = new Trumpeteer(trumpeteerIdSupplier.get(), Location.create(latitude, longitude), t -> trumpeteers.remove(t.id));
+        Trumpeteer trumpeteer = new Trumpeteer(trumpeteerIdSupplier.get(), Location.create(latitude, longitude));
         trumpeteers.put(trumpeteer.id, trumpeteer);
         logger.debug("Trumpeteer {} created.", trumpeteer.id);
         return trumpeteer;
     }
 
     public Optional<Trumpeteer> findById(String id){
-        Optional<Trumpeteer> trumpeteer = Optional.ofNullable(trumpeteers.get(id));
-
-        trumpeteer.ifPresent(t -> t.updateLastAccessed());
-
-        return trumpeteer;
+        return Optional.ofNullable(trumpeteers.get(id));
     }
 
     public long countTrumpeteersInRangeOf(Trumpeteer trumpeteer, long maxDistance){
