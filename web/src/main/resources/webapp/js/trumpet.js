@@ -9,6 +9,7 @@ $(function () {
             success: function (data) {
                 window.subscribeUrl = data['_links']["subscribe"]["href"];
                 window.trumpetUrl = data['_links']["trumpet"]["href"];
+                window.locationUrl = data['_links']["location"]["href"];
 
                 window.eventSource = new EventSource(subscribeUrl);
                 window.eventSource.addEventListener('trumpet', function (event) {
@@ -35,11 +36,29 @@ $(function () {
     });
 
     function geoLocationError(msg) {
+    }
 
+    function syncLocation(position) {
+        console.log(position.coords.latitude);
+        console.log(position.coords.longitude);
+
+        $.ajax({
+            url: window.locationUrl,
+            type: 'PUT',
+            data: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            }
+        });
     }
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(geoLocationSuccess, geoLocationError);
+
+        // Update location every 20 seconds
+        setInterval(function () {
+            navigator.geolocation.getCurrentPosition(syncLocation, geoLocationError);
+        }, 20 * 1000);
     }
 
     $("#message").keypress(function (e) {
@@ -47,5 +66,4 @@ $(function () {
             $('#trumpet-btn').click();
         }
     });
-
 });
