@@ -75,7 +75,7 @@ public class TrumpetResource {
         entryPoint.put("trumpeteerId", trumpeteer.id);
         entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscription").build());
         entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
-        entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpet").build());
+        entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpets").build());
         entryPoint.addLink("self", uriInfo.getRequestUri());
 
         return Response.ok(entryPoint).build();
@@ -99,7 +99,7 @@ public class TrumpetResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("/trumpeteers/{id}/trumpet")
+    @Path("/trumpeteers/{id}/trumpets")
     public Response trumpet(@PathParam("id") String id,
                             @FormParam("message") @NotBlank String message,
                             @FormParam("distance") @Min(1) Integer distance) {
