@@ -2,9 +2,6 @@ package com.jayway.trumpet.server.boot;
 
 import org.aeonbits.owner.Config;
 
-import static org.aeonbits.owner.Config.DefaultValue;
-import static org.aeonbits.owner.Config.Key;
-
 
 public interface TrumpetServerConfig extends Config {
 

@@ -1,6 +1,5 @@
 package com.jayway.trumpet.server.domain.trumpeteer;
 
-import com.jayway.trumpet.server.domain.Tuple;
 import com.jayway.trumpet.server.domain.location.DistanceUnit;
 import com.jayway.trumpet.server.domain.location.Location;
 import org.slf4j.Logger;
@@ -8,9 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
@@ -45,12 +42,17 @@ public class Trumpeteer {
         return this;
     }
 
-    public void trumpet(String message, Optional<Integer> distanceInMeters, Stream<Trumpeteer> candidates, Consumer<Tuple<String, Trumpet>> trumpetBroadcaster) {
+    public void trumpet(String message, Optional<Integer> distanceInMeters, Stream<Trumpeteer> candidates, Consumer<Trumpet> trumpetBroadcaster) {
         int distance = Math.min(distanceInMeters.orElse(200), 200);
         candidates //.filter(t -> !t.id.equals(id))
-                .map(t -> Tuple.tuple(t.id, Trumpet.create(UUID.randomUUID().toString(), message, t.distanceTo(this, DistanceUnit.METERS).longValue())))
-                .filter(t -> t.right.distanceFromSource <= distance)
+                //.map(t -> Tuple.tuple(t.id, Trumpet.create(UUID.randomUUID().toString(), message, t.distanceTo(this, DistanceUnit.METERS).longValue())))
+                .map(t -> createTrumpet(t, message))
+                .filter(t -> t.distanceFromSource <= distance)
                 .forEach(trumpetBroadcaster);
+    }
+
+    private Trumpet createTrumpet(Trumpeteer receiver, String message){
+        return Trumpet.create(this, receiver, UUID.randomUUID().toString(), message, this.distanceTo(receiver, DistanceUnit.METERS).longValue());
     }
 
     public boolean inRange(Trumpeteer other, long maxDistance) {

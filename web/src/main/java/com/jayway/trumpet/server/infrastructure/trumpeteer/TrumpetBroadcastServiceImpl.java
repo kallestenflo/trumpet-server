@@ -1,11 +1,11 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.domain.Tuple;
 import com.jayway.trumpet.server.domain.trumpeteer.Subscriber;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
+import com.jayway.trumpet.server.rest.HalRepresentation;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 
@@ -46,16 +46,14 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         purgeStaleTrumpeteersTimer.schedule(purgeTask, config.trumpeteerPurgeInterval(), config.trumpeteerPurgeInterval());
     }
 
-
     @Override
-    public void broadcast(Tuple<String, Trumpet> tuple) {
+    public void broadcast(Trumpet trumpet) {
         try {
-            subscribers.getOrDefault(tuple.left, NOOP_SUBSCRIPTION).write(tuple.right);
+            subscribers.getOrDefault(trumpet.receiver.id, NOOP_SUBSCRIPTION).write(trumpet);
         } catch (IOException e) {
-            subscribers.remove(tuple.left);
+            subscribers.remove(trumpet.receiver.id);
         }
     }
-
 
     @Override
     public void subscribe(Subscriber subscriber) {
@@ -79,11 +77,19 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         }
 
         public void write(Trumpet trumpet) throws IOException {
+
+            HalRepresentation entity = new HalRepresentation();
+            entity.put("id", trumpet.id);
+            entity.put("timestamp", trumpet.timestamp);
+            entity.put("message", trumpet.message);
+            entity.put("distanceFromSource", trumpet.distanceFromSource);
+
             OutboundEvent outboundEvent = new OutboundEvent.Builder()
                     .name("trumpet")
-                    .data(trumpet)
+                    .data(entity)
                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
                     .build();
+
             eventOutput.write(outboundEvent);
             updateLastAccessedTo(System.currentTimeMillis());
         }

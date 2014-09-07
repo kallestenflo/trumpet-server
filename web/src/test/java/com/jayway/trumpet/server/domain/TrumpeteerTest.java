@@ -1,18 +1,5 @@
 package com.jayway.trumpet.server.domain;
 
-import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.domain.trumpeteer.Trumpeteer;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerRepository;
-import org.aeonbits.owner.ConfigFactory;
-import org.glassfish.jersey.media.sse.EventOutput;
-import org.junit.Test;
-
-import java.util.Properties;
-
-import static com.jayway.trumpet.server.boot.TrumpetDomainConfig.TRUMPETEER_PURGE_INTERVAL;
-import static com.jayway.trumpet.server.boot.TrumpetDomainConfig.TRUMPETEER_STALE_THRESHOLD;
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class TrumpeteerTest {
 
 

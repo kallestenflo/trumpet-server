@@ -1,37 +1,29 @@
 package com.jayway.trumpet.server.domain.trumpeteer;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class Trumpet {
+
+    public Trumpeteer trumpeteer;
+    public Trumpeteer receiver;
     public final String id;
     public final long timestamp;
-
     public final String message;
     public final long distanceFromSource;
 
-    @JsonCreator
-    private Trumpet(@JsonProperty("id") String id,
-                    @JsonProperty("timestamp") long timestamp,
-                    @JsonProperty("message") String message,
-                    @JsonProperty("distanceFromSource") long distanceFromSource) {
+    private Trumpet(Trumpeteer trumpeteer,
+                    Trumpeteer receiver,
+                    String id,
+                    long timestamp,
+                    String message,
+                    long distanceFromSource) {
+        this.trumpeteer = trumpeteer;
+        this.receiver = receiver;
         this.id = id;
         this.timestamp = timestamp;
         this.message = message;
         this.distanceFromSource = distanceFromSource;
     }
 
-    public static Trumpet create(String id, String message, long distanceFromSource){
-        return new Trumpet(id, System.currentTimeMillis(), message, distanceFromSource);
-    }
-
-    @Override
-    public String toString() {
-        return "Trumpet{" +
-                "id='" + id + '\'' +
-                ", timestamp=" + timestamp +
-                ", message='" + message + '\'' +
-                ", distanceFromSource=" + distanceFromSource +
-                '}';
+    public static Trumpet create(Trumpeteer trumpeteer, Trumpeteer receiver, String id, String message, long distanceFromSource){
+        return new Trumpet(trumpeteer, receiver, id, System.currentTimeMillis(), message, distanceFromSource);
     }
 }

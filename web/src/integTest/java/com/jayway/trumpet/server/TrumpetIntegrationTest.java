@@ -3,8 +3,11 @@ package com.jayway.trumpet.server;
 import com.jayway.fixture.ServerRunningRule;
 import com.jayway.fixture.TrumpetClient;
 import com.jayway.fixture.TrumpetClientException;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.fixture.ThrowableExpecter.expect;
@@ -31,8 +34,9 @@ public class TrumpetIntegrationTest {
         await().until(() -> !inRange1.messages().isEmpty());
         await().until(() -> !inRange2.messages().isEmpty());
 
-        assertThat(inRange1.messages()).extracting("message").containsExactly(MESSAGE);
-        assertThat(inRange2.messages()).extracting("message").containsExactly(MESSAGE);
+
+        assertThat(JsonPath.<List<String>>read(inRange1.messages(), "[*].message")).containsExactly(MESSAGE);
+        assertThat(JsonPath.<List<String>>read(inRange2.messages(), "[*].message")).containsExactly(MESSAGE);
         assertThat(outOfRange1.messages().isEmpty()).isTrue();
     }
 
@@ -47,13 +51,13 @@ public class TrumpetIntegrationTest {
 
     @Test
     public void number_of_trumpeteers_in_range_is_returned_when_location_is_updated() {
-        TrumpetClient trumpeteer1 = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+        TrumpetClient trumpeteer = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
 
-        long inRangeBefore = trumpeteer1.updateLocation(55.583985D, 12.957578D);
+        long inRangeBefore = trumpeteer.updateLocation(55.583985D, 12.957578D);
 
-        TrumpetClient trumpeteer2 = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+        TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
 
-        long inRangeAfter = trumpeteer1.updateLocation(55.583985D, 12.957578D);
+        long inRangeAfter = trumpeteer.updateLocation(55.583985D, 12.957578D);
 
         assertThat(inRangeAfter - inRangeBefore).isEqualTo(1);
     }
