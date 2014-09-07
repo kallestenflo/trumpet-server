@@ -27,6 +27,7 @@ public class TrumpetClient {
             .register(SseFeature.class)
             .build();
 
+    private final String host;
     private final int port;
 
     private String locationUri;
@@ -38,15 +39,20 @@ public class TrumpetClient {
 
 
     public static TrumpetClient create(int port){
-        return new TrumpetClient(port);
+        return create("localhost", port);
     }
 
-    private TrumpetClient(int port) {
+    public static TrumpetClient create(String host, int port){
+        return new TrumpetClient(host, port);
+    }
+
+    private TrumpetClient(String host, int port) {
+        this.host = host;
         this.port = port;
     }
 
     public TrumpetClient connect(Double latitude, Double longitude){
-        WebTarget target = client.target("http://localhost:" + port + "/api")
+        WebTarget target = client.target("http://" + host + ":" + port + "/api")
                 .queryParam("latitude", latitude)
                 .queryParam("longitude", longitude);
 

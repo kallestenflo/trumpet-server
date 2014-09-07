@@ -35,6 +35,10 @@ public class TrumpetServer {
         return ((ServerConnector)server.getConnectors()[0]).getLocalPort();
     }
 
+    public String getHost(){
+        return ((ServerConnector)server.getConnectors()[0]).getHost();
+    }
+
     public void start(){
         try {
             server.start();

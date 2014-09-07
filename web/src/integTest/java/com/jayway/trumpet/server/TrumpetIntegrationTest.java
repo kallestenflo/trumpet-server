@@ -18,16 +18,20 @@ public class TrumpetIntegrationTest {
 
     @ClassRule
     public static ServerRunningRule server = new ServerRunningRule();
+    //public static ServerRunningRule server = ServerRunningRule.remote("elefant-server.herokuapp.com", 80);
 
     private static final String MESSAGE = "Ho ho";
+
 
     @Test
     public void a_trumpeteer_receives_messages_when_in_range() {
 
-        TrumpetClient sender = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
-        TrumpetClient inRange1 = TrumpetClient.create(server.port()).connect(55.584126D, 12.957406D);
-        TrumpetClient inRange2 = TrumpetClient.create(server.port()).connect(55.584126D, 12.957406D);
-        TrumpetClient outOfRange1 = TrumpetClient.create(server.port()).connect(55.581212D, 12.959208D);
+        System.out.println(server.host());
+
+        TrumpetClient sender = TrumpetClient.create(server.host(), server.port()).connect(55.583985D, 12.957578D);
+        TrumpetClient inRange1 = TrumpetClient.create(server.host(), server.port()).connect(55.584126D, 12.957406D);
+        TrumpetClient inRange2 = TrumpetClient.create(server.host(), server.port()).connect(55.584126D, 12.957406D);
+        TrumpetClient outOfRange1 = TrumpetClient.create(server.host(), server.port()).connect(55.581212D, 12.959208D);
 
         sender.trumpet(MESSAGE);
 
@@ -41,7 +45,7 @@ public class TrumpetIntegrationTest {
 
     @Test
     public void a_trumpet_message_can_not_be_null_or_empty() {
-        TrumpetClient sender = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+        TrumpetClient sender = TrumpetClient.create(server.host(), server.port()).connect(55.583985D, 12.957578D);
 
         TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(""));
 
@@ -50,11 +54,11 @@ public class TrumpetIntegrationTest {
 
     @Test
     public void number_of_trumpeteers_in_range_is_returned_when_location_is_updated() {
-        TrumpetClient trumpeteer = TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+        TrumpetClient trumpeteer = TrumpetClient.create(server.host(), server.port()).connect(55.583985D, 12.957578D);
 
         long inRangeBefore = trumpeteer.updateLocation(55.583985D, 12.957578D);
 
-        TrumpetClient.create(server.port()).connect(55.583985D, 12.957578D);
+        TrumpetClient.create(server.host(), server.port()).connect(55.583985D, 12.957578D);
 
         long inRangeAfter = trumpeteer.updateLocation(55.583985D, 12.957578D);
 

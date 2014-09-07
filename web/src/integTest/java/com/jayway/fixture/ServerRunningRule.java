@@ -8,6 +8,7 @@ import org.aeonbits.owner.ConfigFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.mockito.Mockito;
 
 import java.util.Properties;
 
@@ -31,6 +32,16 @@ public class ServerRunningRule implements TestRule {
         server = new TrumpetServer(config);
     }
 
+    private ServerRunningRule(String host, int port) {
+        server = Mockito.mock(TrumpetServer.class);
+        Mockito.when(server.getHost()).thenReturn(host);
+        Mockito.when(server.getPort()).thenReturn(port);
+    }
+
+    public static ServerRunningRule remote(String host, int port){
+        return new ServerRunningRule(host, port);
+    }
+
     public ServerRunningRule(Properties props) {
         TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class, props);
 
@@ -39,6 +50,10 @@ public class ServerRunningRule implements TestRule {
 
     public int port(){
         return server.getPort();
+    }
+
+    public String host(){
+        return server.getHost();
     }
 
     @Override
