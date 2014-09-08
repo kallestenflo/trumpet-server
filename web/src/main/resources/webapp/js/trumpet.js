@@ -15,6 +15,7 @@ $(function () {
                 window.eventSource.addEventListener('trumpet', function (event) {
                     var json = JSON.parse(event.data);
                     $('#trumpets').prepend("<div class='alert alert-info'>" + json.message + " (" + json.distanceFromSource + " meters)</div>");
+                    $("#elefant-mascot").effect("shake");
 
                     var msg = new SpeechSynthesisUtterance(json.message);
                     window.speechSynthesis.speak(msg);
