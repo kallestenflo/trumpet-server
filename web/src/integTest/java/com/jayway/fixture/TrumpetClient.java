@@ -98,19 +98,6 @@ public class TrumpetClient {
         return messages.get(index);
     }
 
-    public void echo(TrumpetMessage message){
-
-        WebTarget target = client.target(message.echoUri());
-
-        Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
-                .header("content-type", MediaType.APPLICATION_FORM_URLENCODED_TYPE)
-                .post(null);
-
-        if(response.getStatus() != 200){
-            throw new TrumpetClientException(response);
-        }
-    }
-
     public int countAdjacentTrumpeteers(){
         WebTarget target = client.target(inRangeUri);
 
@@ -124,7 +111,22 @@ public class TrumpetClient {
         return (Integer) entity.get("count");
     }
 
-    public void trumpet(String message){
+    public Map<String, Object> echo(TrumpetMessage message){
+
+        WebTarget target = client.target(message.echoUri());
+
+        Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
+                .header("content-type", MediaType.APPLICATION_FORM_URLENCODED_TYPE)
+                .post(null);
+
+        if(response.getStatus() != 200){
+            throw new TrumpetClientException(response);
+        }
+
+        return response.readEntity(Map.class);
+    }
+
+    public Map<String, Object> trumpet(String message){
         WebTarget target = client.target(trumpetUri);
 
         Form form = new Form();
@@ -136,6 +138,8 @@ public class TrumpetClient {
         if(response.getStatus() != 200){
             throw new TrumpetClientException(response);
         }
+
+        return response.readEntity(Map.class);
     }
 
     public long updateLocation(Double latitude, Double longitude){

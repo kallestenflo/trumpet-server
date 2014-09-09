@@ -152,7 +152,7 @@ public class TrumpetResource {
 
         trumpeteer.trumpet(trumpetId, message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
-        return Response.ok().build();
+        return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
 
     @POST
@@ -160,7 +160,7 @@ public class TrumpetResource {
     @Path("/trumpeteers/{id}/echoes")
     public Response echoes(@Context UriInfo uriInfo,
                             @PathParam("id") String id,
-                            @FormParam("trumpedId") @NotBlank String trumpedId,
+                            @FormParam("trumpetId") @NotBlank String trumpetId,
                             @FormParam("message") @NotBlank String message,
                             @FormParam("distance") @Min(1) Integer distance) {
 
@@ -171,9 +171,9 @@ public class TrumpetResource {
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
-        trumpeteer.echo(trumpedId, message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
+        trumpeteer.echo(trumpetId, message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
-        return Response.ok().build();
+        return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
 
     @GET
@@ -216,7 +216,7 @@ public class TrumpetResource {
                 .path(trumpeteer.id)
                 .path("echoes")
                 .queryParam("message", message)
-                .queryParam("trumpedId", t.id)
+                .queryParam("trumpetId", t.id)
                 .build());
         return trumpetPayload;
     }
