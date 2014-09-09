@@ -11,8 +11,8 @@ public class LocationTest {
     @Test
     public void distance_between_locations_can_be_calculated() {
 
-        Location location1 = Location.location(55.583985D, 12.957578D);
-        Location location2 = Location.location(55.584126D, 12.957406D);
+        Location location1 = Location.location(55.583985D, 12.957578D, 1);
+        Location location2 = Location.location(55.584126D, 12.957406D, 1);
 
         int distanceInMeters = location1.distanceTo(location2, DistanceUnit.METERS).intValue();
 

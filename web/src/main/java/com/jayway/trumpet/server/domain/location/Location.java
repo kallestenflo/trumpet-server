@@ -6,17 +6,20 @@ public class Location {
 
     public final Double latitude;
     public final Double longitude;
+    public final Integer accuracy;
 
-    public static Location location(Double latitude, Double longitude){
-        return new Location(latitude, longitude);
+    public static Location location(Double latitude, Double longitude, Integer accuracy){
+        return new Location(latitude, longitude, accuracy);
     }
 
-    private Location(Double latitude, Double longitude) {
+    private Location(Double latitude, Double longitude, Integer accuracy) {
         requireNonNull(latitude, "latitude can not be null");
         requireNonNull(longitude, "longitude can not be null");
+        requireNonNull(accuracy, "accuracy can not be null");
 
         this.latitude = latitude;
         this.longitude = longitude;
+        this.accuracy = accuracy;
     }
 
 

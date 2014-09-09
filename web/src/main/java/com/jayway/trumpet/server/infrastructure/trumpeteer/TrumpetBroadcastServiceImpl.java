@@ -5,7 +5,6 @@ import com.jayway.trumpet.server.domain.trumpeteer.Subscriber;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
-import com.jayway.trumpet.server.rest.HalRepresentation;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -52,11 +50,11 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     }
 
     @Override
-    public void broadcast(Trumpet trumpet, Map<String, URI> links) {
+    public void broadcast(Trumpet trumpet, Map<String, Object> trumpetPayload) {
         try {
             logger.debug("Broadcasting trumpet");
 
-            subscribers.getOrDefault(trumpet.receiver.id, NOOP_SUBSCRIPTION).write(trumpet);
+            subscribers.getOrDefault(trumpet.receiver.id, NOOP_SUBSCRIPTION).write(trumpetPayload);
         } catch (IOException e) {
             subscribers.remove(trumpet.receiver.id);
         }
@@ -83,17 +81,13 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
             lastAccessed.set(newLastAccess);
         }
 
-        public void write(Trumpet trumpet) throws IOException {
+        public void write(Map<String, Object> trumpetPayload) throws IOException {
 
-            HalRepresentation entity = new HalRepresentation();
-            entity.put("id", trumpet.id);
-            entity.put("timestamp", trumpet.timestamp);
-            entity.put("message", trumpet.message);
-            entity.put("distanceFromSource", trumpet.distanceFromSource);
+
 
             OutboundEvent outboundEvent = new OutboundEvent.Builder()
                     .name("trumpet")
-                    .data(entity)
+                    .data(trumpetPayload)
                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
                     .build();
 

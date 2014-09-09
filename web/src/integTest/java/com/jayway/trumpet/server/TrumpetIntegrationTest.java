@@ -36,8 +36,8 @@ public class TrumpetIntegrationTest {
         await().until(() -> !inRange1.messages().isEmpty());
         await().until(() -> !inRange2.messages().isEmpty());
 
-        assertThat(JsonPath.<List<String>>read(inRange1.messages(), "[*].message")).containsExactly(MESSAGE);
-        assertThat(JsonPath.<List<String>>read(inRange2.messages(), "[*].message")).containsExactly(MESSAGE);
+        assertThat(inRange1.messages()).extracting("message").containsExactly(MESSAGE);
+        assertThat(inRange2.messages()).extracting("message").containsExactly(MESSAGE);
         assertThat(outOfRange1.messages().isEmpty()).isTrue();
     }
 
@@ -61,6 +61,22 @@ public class TrumpetIntegrationTest {
         long inRangeAfter = trumpeteer.updateLocation(55.583985D, 12.957578D);
 
         assertThat(inRangeAfter - inRangeBefore).isEqualTo(1);
+    }
+
+    @Test
+    public void a_trumpet_can_be_echoed() {
+        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
+        TrumpetClient echo = createClient().connect(55.584126D, 12.957406D);
+
+        sender.trumpet(MESSAGE);
+
+        await().until(() -> sender.hasReceived(1));
+        await().until(() -> echo.hasReceived(1));
+
+        echo.echo(echo.messages().get(0));
+
+        await().until(() -> sender.hasReceived(2));
+        await().until(() -> echo.hasReceived(2));
     }
 
     private TrumpetClient createClient(){

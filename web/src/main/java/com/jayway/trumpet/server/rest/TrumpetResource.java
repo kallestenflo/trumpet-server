@@ -2,7 +2,6 @@ package com.jayway.trumpet.server.rest;
 
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.trumpeteer.Subscriber;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
@@ -28,13 +27,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +39,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.jayway.trumpet.server.domain.location.Location.location;
 import static java.util.Collections.singletonMap;
 
 @Path("/")
@@ -70,10 +67,13 @@ public class TrumpetResource {
 
     @GET
     public Response entryPoint(@Context UriInfo uriInfo,
-                               @QueryParam("latitude") @NotNull Double latitude,
-                               @QueryParam("longitude") @NotNull Double longitude) {
+                               @QueryParam("latitude")  @NotNull Double latitude,
+                               @QueryParam("longitude") @NotNull Double longitude,
+                               @QueryParam("accuracy")  Integer accuracy) {
 
-        Trumpeteer trumpeteer = trumpeteerRepository.createTrumpeteer(latitude, longitude);
+        accuracy = Optional.ofNullable(accuracy).orElse(config.trumpeteerMaxDistance());
+
+        Trumpeteer trumpeteer = trumpeteerRepository.createTrumpeteer(latitude, longitude, accuracy);
 
         HalRepresentation entryPoint = new HalRepresentation();
         entryPoint.put("trumpeteerId", trumpeteer.id);
@@ -88,13 +88,16 @@ public class TrumpetResource {
     @PUT
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("trumpeteers/{id}/location")
-    public Response location(@PathParam("id") String id,
+    public Response updateLocation(@PathParam("id") String id,
                              @FormParam("latitude") @NotNull Double latitude,
-                             @FormParam("longitude") @NotNull Double longitude) {
+                             @FormParam("longitude") @NotNull Double longitude,
+                             @FormParam("accuracy") Integer accuracy) {
+
+        accuracy = Optional.ofNullable(accuracy).orElse(config.trumpeteerMaxDistance());
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id)
                 .orElseThrow(trumpeteerNotFound)
-                .updateLocation(Location.location(latitude, longitude));
+                .updateLocation(location(latitude, longitude, accuracy));
 
         int trumpeteersInRange = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistance());
 
@@ -112,16 +115,8 @@ public class TrumpetResource {
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-
-            URI echoUri = uriInfo.getBaseUriBuilder()
-                    .path("trumpeteers")
-                    .path(trumpeteer.id)
-                    .path("echoes")
-                    .queryParam("message", message)
-                    .queryParam("messageId", t.id)
-                    .build();
-
-            trumpetBroadcastService.broadcast(t, singletonMap("echo", echoUri));
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, t.id, trumpeteer, t);
+            trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
         trumpeteer.trumpet(message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
@@ -141,18 +136,9 @@ public class TrumpetResource {
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-
-            URI echoUri = uriInfo.getBaseUriBuilder()
-                    .path("trumpeteers")
-                    .path(trumpeteer.id)
-                    .path("echoes")
-                    .queryParam("message", message)
-                    .queryParam("messageId", t.id)
-                    .build();
-
-            trumpetBroadcastService.broadcast(t, singletonMap("echo", echoUri));
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, messageId, trumpeteer, t);
+            trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
-
 
         trumpeteer.trumpet(message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
@@ -173,7 +159,6 @@ public class TrumpetResource {
         return channel;
     }
 
-
     @GET
     @Path("/trumpeteers")
     public Response trumpeteers() {
@@ -186,5 +171,22 @@ public class TrumpetResource {
         }).collect(Collectors.toList());
 
         return Response.ok(trumpeteers).build();
+    }
+
+    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, String message, String trumpetId, Trumpeteer trumpeteer, Trumpet t) {
+        HalRepresentation trumpetPayload = new HalRepresentation();
+        trumpetPayload.put("id", trumpetId);
+        trumpetPayload.put("timestamp", t.timestamp);
+        trumpetPayload.put("message", t.message);
+        trumpetPayload.put("distanceFromSource", t.distanceFromSource);
+        trumpetPayload.put("accuracy", trumpeteer.location.accuracy);
+        trumpetPayload.addLink("echo", uriInfo.getBaseUriBuilder()
+                .path("trumpeteers")
+                .path(trumpeteer.id)
+                .path("echoes")
+                .queryParam("message", message)
+                .queryParam("messageId", t.id)
+                .build());
+        return trumpetPayload;
     }
 }

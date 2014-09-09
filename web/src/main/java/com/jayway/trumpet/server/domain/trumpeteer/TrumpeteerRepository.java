@@ -28,9 +28,10 @@ public class TrumpeteerRepository {
 
 
     public Trumpeteer createTrumpeteer(Double latitude,
-                                       Double longitude){
+                                       Double longitude,
+                                       Integer accuracy){
 
-        Trumpeteer trumpeteer = new Trumpeteer(trumpeteerIdSupplier.get(), location(latitude, longitude));
+        Trumpeteer trumpeteer = new Trumpeteer(trumpeteerIdSupplier.get(), location(latitude, longitude, accuracy));
         trumpeteers.put(trumpeteer.id, trumpeteer);
         logger.debug("Trumpeteer {} created.", trumpeteer.id);
         return trumpeteer;

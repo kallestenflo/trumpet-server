@@ -35,7 +35,7 @@ public class TrumpetClient {
     private String trumpetUri;
 
 
-    private final List<Map<String, Object>> messages = new CopyOnWriteArrayList<>();
+    private final List<TrumpetMessage> messages = new CopyOnWriteArrayList<>();
 
 
     public static TrumpetClient create(int port){
@@ -49,6 +49,10 @@ public class TrumpetClient {
     private TrumpetClient(String host, int port) {
         this.host = host;
         this.port = port;
+    }
+
+    public boolean hasReceived(int numberOfMessages){
+        return messages.size() == numberOfMessages;
     }
 
     public TrumpetClient connect(Double latitude, Double longitude){
@@ -75,7 +79,7 @@ public class TrumpetClient {
                     }
                     Map<String, Object> trumpet = inboundEvent.readData(Map.class);
 
-                    messages.add(trumpet);
+                    messages.add(new TrumpetMessage(trumpet));
                 }
             }
         };
@@ -84,8 +88,21 @@ public class TrumpetClient {
         return this;
     }
 
-    public List<Map<String, Object>> messages(){
+    public List<TrumpetMessage> messages(){
         return Collections.unmodifiableList(messages);
+    }
+
+    public void echo(TrumpetMessage message){
+
+        WebTarget target = client.target(message.echoUri());
+
+        Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
+                .header("content-type", MediaType.APPLICATION_FORM_URLENCODED_TYPE)
+                .post(null);
+
+        if(response.getStatus() != 200){
+            throw new TrumpetClientException(response);
+        }
     }
 
     public void trumpet(String message){
