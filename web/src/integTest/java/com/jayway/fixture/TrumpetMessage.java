@@ -18,6 +18,11 @@ public class TrumpetMessage {
         return (String) payload.get("message");
     }
 
+    public String getId(){
+        return (String) payload.get("id");
+    }
+
+
     public URI echoUri(){
         return URI.create(read(payload, "_links.echo.href"));
     }

@@ -92,6 +92,10 @@ public class TrumpetClient {
         return Collections.unmodifiableList(messages);
     }
 
+    public TrumpetMessage message(int index){
+        return messages.get(index);
+    }
+
     public void echo(TrumpetMessage message){
 
         WebTarget target = client.target(message.echoUri());

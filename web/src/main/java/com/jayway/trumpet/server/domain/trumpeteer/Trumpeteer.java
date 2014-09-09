@@ -32,7 +32,6 @@ public class Trumpeteer {
     }
 
 
-
     public Trumpeteer updateLocation(Location newLocation) {
         requireNonNull(location, "Location can not be null.");
 
@@ -42,7 +41,8 @@ public class Trumpeteer {
         return this;
     }
 
-    public void trumpet(String message,
+    public void trumpet(String trumpetId,
+                        String message,
                         Optional<Integer> distanceInMeters,
                         Stream<Trumpeteer> candidates,
                         Consumer<Trumpet> trumpetBroadcaster) {
@@ -52,18 +52,25 @@ public class Trumpeteer {
         requireNonNull(candidates, "candidates can not be null.");
         requireNonNull(trumpetBroadcaster, "trumpetBroadcaster can not be null.");
 
+        logger.debug("Trumpeteer {} trumpeted message {}", id, trumpetId);
 
-        String id = UUID.randomUUID().toString();
-        long timestamp = System.currentTimeMillis();
-        int distance = Math.min(distanceInMeters.orElse(200), 200);
-
-        candidates.map(t -> createTrumpet(t, id, timestamp, message))
-                .filter(t -> t.distanceFromSource <= distance)
-                .forEach(trumpetBroadcaster);
+        broadcast(trumpetId, message, distanceInMeters, candidates, trumpetBroadcaster);
     }
 
-    private Trumpet createTrumpet(Trumpeteer receiver, String id, long timestamp, String message){
-        return Trumpet.create(this, receiver, id, message, this.distanceTo(receiver, DistanceUnit.METERS).intValue(), timestamp);
+    public void echo(String trumpetId,
+                     String message,
+                     Optional<Integer> distanceInMeters,
+                     Stream<Trumpeteer> candidates,
+                     Consumer<Trumpet> trumpetBroadcaster) {
+
+        requireNonNull(message, "message can not be null.");
+        requireNonNull(distanceInMeters, "distanceInMeters can not be null.");
+        requireNonNull(candidates, "candidates can not be null.");
+        requireNonNull(trumpetBroadcaster, "trumpetBroadcaster can not be null.");
+
+        logger.debug("Trumpeteer {} echoed message {}", id, trumpetId);
+
+        broadcast(trumpetId, message, distanceInMeters, candidates, trumpetBroadcaster);
     }
 
     public boolean inRange(Trumpeteer other, long maxDistance) {
@@ -80,6 +87,20 @@ public class Trumpeteer {
 
     public Double distanceTo(Trumpeteer other, DistanceUnit distanceUnit) {
         return this.location.distanceTo(other.location, distanceUnit);
+    }
+
+    private void broadcast(String trumpetId, String message, Optional<Integer> distanceInMeters, Stream<Trumpeteer> candidates, Consumer<Trumpet> trumpetBroadcaster) {
+        long timestamp = System.currentTimeMillis();
+        int distance = Math.min(distanceInMeters.orElse(200), 200);
+
+        candidates.map(t -> createTrumpet(t, trumpetId, timestamp, message))
+                .filter(t -> t.distanceFromSource <= distance)
+                .forEach(trumpetBroadcaster);
+    }
+
+
+    private Trumpet createTrumpet(Trumpeteer receiver, String id, long timestamp, String message) {
+        return Trumpet.create(this, receiver, id, message, this.distanceTo(receiver, DistanceUnit.METERS).intValue(), timestamp);
     }
 
     private void requirePositive(long i, String message) {

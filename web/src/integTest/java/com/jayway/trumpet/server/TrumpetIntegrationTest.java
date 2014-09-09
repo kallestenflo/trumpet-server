@@ -77,6 +77,8 @@ public class TrumpetIntegrationTest {
 
         await().until(() -> sender.hasReceived(2));
         await().until(() -> echo.hasReceived(2));
+
+        assertThat(echo.message(0).getId()).isEqualTo(echo.message(1).getId());
     }
 
     private TrumpetClient createClient(){

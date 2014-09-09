@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -115,11 +116,13 @@ public class TrumpetResource {
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, t.id, trumpeteer, t);
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, trumpeteer, t);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
-        trumpeteer.trumpet(message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
+        String trumpetId = UUID.randomUUID().toString();
+
+        trumpeteer.trumpet(trumpetId, message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
         return Response.ok().build();
     }
@@ -129,18 +132,18 @@ public class TrumpetResource {
     @Path("/trumpeteers/{id}/echoes")
     public Response echoes(@Context UriInfo uriInfo,
                             @PathParam("id") String id,
-                            @FormParam("messageId") @NotBlank String messageId,
+                            @FormParam("trumpedId") @NotBlank String trumpedId,
                             @FormParam("message") @NotBlank String message,
                             @FormParam("distance") @Min(1) Integer distance) {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, messageId, trumpeteer, t);
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, trumpeteer, t);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
-        trumpeteer.trumpet(message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
+        trumpeteer.echo(trumpedId, message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
         return Response.ok().build();
     }
@@ -173,9 +176,9 @@ public class TrumpetResource {
         return Response.ok(trumpeteers).build();
     }
 
-    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, String message, String trumpetId, Trumpeteer trumpeteer, Trumpet t) {
+    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, String message, Trumpeteer trumpeteer, Trumpet t) {
         HalRepresentation trumpetPayload = new HalRepresentation();
-        trumpetPayload.put("id", trumpetId);
+        trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
         trumpetPayload.put("message", t.message);
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
@@ -185,7 +188,7 @@ public class TrumpetResource {
                 .path(trumpeteer.id)
                 .path("echoes")
                 .queryParam("message", message)
-                .queryParam("messageId", t.id)
+                .queryParam("trumpedId", t.id)
                 .build());
         return trumpetPayload;
     }
