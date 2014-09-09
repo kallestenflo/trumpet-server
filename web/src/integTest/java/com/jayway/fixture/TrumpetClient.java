@@ -33,6 +33,7 @@ public class TrumpetClient {
     private String locationUri;
     private String subscribeUri;
     private String trumpetUri;
+    private String inRangeUri;
 
 
     private final List<TrumpetMessage> messages = new CopyOnWriteArrayList<>();
@@ -65,6 +66,7 @@ public class TrumpetClient {
         locationUri = read(ep, "_links.location.href");
         subscribeUri = read(ep, "_links.subscribe.href");
         trumpetUri = read(ep, "_links.trumpet.href");
+        inRangeUri = read(ep, "_links.in-range.href");
 
         Thread thread = new Thread(){
             @Override
@@ -107,6 +109,19 @@ public class TrumpetClient {
         if(response.getStatus() != 200){
             throw new TrumpetClientException(response);
         }
+    }
+
+    public int countAdjacentTrumpeteers(){
+        WebTarget target = client.target(inRangeUri);
+
+        Response response = target.request().get();
+
+        if(response.getStatus() != 200){
+            throw new TrumpetClientException(response);
+        }
+        Map<String, Object> entity = response.readEntity(Map.class);
+
+        return (Integer) entity.get("count");
     }
 
     public void trumpet(String message){

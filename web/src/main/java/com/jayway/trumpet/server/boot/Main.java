@@ -44,7 +44,7 @@ public class Main {
         System.out.println("ENTRY POINT");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl \"http://localhost:9191/api/?latitude=55.583985&longitude=12.957578\" ");
+        System.out.println("curl \"http://localhost:9191/api/?latitude=55.583985&longitude=12.957578&accuracy=100\" ");
         System.out.println("");
         System.out.println("Response: 200 ");
         System.out.println("{");
@@ -53,6 +53,7 @@ public class Main {
         System.out.println("        \"location\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/location\" },");
         System.out.println("        \"subscribe\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/subscription\" },");
         System.out.println("        \"trumpet\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/trumpet\" }, ");
+        System.out.println("        \"adjacent\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/adjacent\" }, ");
         System.out.println("        \"self\": { \"href\" : \"http://localhost:9191/api/?latitude=55.583985&longitude=12.957578\" }");
         System.out.println("    }");
         System.out.println("}");
@@ -60,7 +61,7 @@ public class Main {
         System.out.println("LOCATION");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl -X PUT -H \"Accept: application/json\" --data \"latitude=55.583985&longitude=12.957578\" http://localhost:9191/api/trumpeteers/1/location");
+        System.out.println("curl -X PUT -H \"Accept: application/json\" --data \"latitude=55.583985&longitude=12.957578&accuracy=10\" http://localhost:9191/api/trumpeteers/1/location");
         System.out.println("Response: Content-type: application/json");
         System.out.println("{");
         System.out.println("    \"trumpeteersInRange\": 12 ");
@@ -80,10 +81,14 @@ public class Main {
         System.out.println("2. Message to subscribe to is 'trumpet'");
         System.out.println("3. Message format is: ");
         System.out.println("{");
-        System.out.println("    \"id\": \"1\", ");
-        System.out.println("    \"timestamp\": 121212122, ");
-        System.out.println("    \"message\": \"This is noise from a trumpeteer!\", ");
-        System.out.println("    \"distanceFromSource\": 240");
+        System.out.println("   \"id\": \"1\", ");
+        System.out.println("   \"timestamp\": 121212122, ");
+        System.out.println("   \"message\": \"foo\", ");
+        System.out.println("   \"distanceFromSource\": 240,");
+        System.out.println("   \"accuracy\": 10");
+        System.out.println("   \"_links\": {");
+        System.out.println("        \"echo\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/echo?trumpedId=xxxx&message=foo&distance=200\" },");
+        System.out.println("    }");
         System.out.println("}");
     }
 }

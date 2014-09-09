@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -41,6 +42,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.jayway.trumpet.server.domain.location.Location.location;
+import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 
 @Path("/")
@@ -48,6 +50,8 @@ import static java.util.Collections.singletonMap;
 public class TrumpetResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpetResource.class);
+
+    private static final String TYPE_COUNT = "count";
 
     private final TrumpeteerRepository trumpeteerRepository;
 
@@ -62,7 +66,7 @@ public class TrumpetResource {
         this.config = config;
         this.trumpetBroadcastService = trumpetBroadcastService;
         this.trumpetSubscriptionService = trumpetSubscriptionService;
-        this.trumpeteerRepository = new TrumpeteerRepository();
+        this.trumpeteerRepository = new TrumpeteerRepository(config);
         this.trumpeteerNotFound = () -> new WebApplicationException("Trumpeteer not found!", Response.Status.NOT_FOUND);
     }
 
@@ -81,9 +85,33 @@ public class TrumpetResource {
         entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscription").build());
         entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
         entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpets").build());
+        entryPoint.addLink("in-range", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("adjacent").build());
         entryPoint.addLink("self", uriInfo.getRequestUri());
 
         return Response.ok(entryPoint).build();
+    }
+
+    @GET
+    @Path("trumpeteers/{id}/adjacent")
+    public Response adjacent(@PathParam("id") String id,
+                             @QueryParam("type") @DefaultValue(TYPE_COUNT) String type,
+                             @QueryParam("distance") Integer distance) {
+
+        if(!TYPE_COUNT.equals(type)){
+            throw new IllegalArgumentException(format("Type '%s' not supported", type));
+        }
+
+        distance = Optional.ofNullable(distance).orElse(config.trumpeteerMaxDistance());
+
+        Trumpeteer trumpeteer = trumpeteerRepository.findById(id)
+                .orElseThrow(trumpeteerNotFound);
+
+        int count = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, distance);
+
+        HalRepresentation representation = new HalRepresentation();
+        representation.put("count", count);
+
+        return Response.ok(representation).build();
     }
 
     @PUT

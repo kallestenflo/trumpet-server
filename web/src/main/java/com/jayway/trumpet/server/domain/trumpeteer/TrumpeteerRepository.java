@@ -1,5 +1,6 @@
 package com.jayway.trumpet.server.domain.trumpeteer;
 
+import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,12 +12,14 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static com.jayway.trumpet.server.domain.location.Location.location;
+import static java.lang.Math.min;
 
 public class TrumpeteerRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpeteerRepository.class);
 
     private final Map<String, Trumpeteer> trumpeteers = new ConcurrentHashMap<>();
+    private final TrumpetDomainConfig config;
 
     private final Supplier<String> trumpeteerIdSupplier = new Supplier<String>() {
         AtomicLong sequence = new AtomicLong();
@@ -25,6 +28,10 @@ public class TrumpeteerRepository {
             return String.valueOf(sequence.incrementAndGet());
         }
     };
+
+    public TrumpeteerRepository(TrumpetDomainConfig config) {
+        this.config = config;
+    }
 
 
     public Trumpeteer createTrumpeteer(Double latitude,
@@ -41,8 +48,11 @@ public class TrumpeteerRepository {
         return Optional.ofNullable(trumpeteers.get(id));
     }
 
-    public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int maxDistance){
-        Long inRange = trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, maxDistance)).count() - 1;
+    public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, Integer maxDistance){
+
+        Integer distance = min(maxDistance, config.trumpeteerMaxDistance());
+
+        Long inRange = trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, distance)).count() - 1;
 
         logger.debug("There are {} trumpeteer(s) in range of trumpeteer {}", inRange, trumpeteer.id);
 

@@ -81,6 +81,19 @@ public class TrumpetIntegrationTest {
         assertThat(echo.message(0).getId()).isEqualTo(echo.message(1).getId());
     }
 
+    @Test
+    public void adjacent_trumpeteers_can_be_counted() {
+        TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
+
+        int adjacentTrumpeteersBefore = one.countAdjacentTrumpeteers();
+
+        TrumpetClient two = createClient().connect(55.583985D, 12.957578D);
+
+        int adjacentTrumpeteersAfter = one.countAdjacentTrumpeteers();
+
+        assertThat(adjacentTrumpeteersAfter).isEqualTo(adjacentTrumpeteersBefore + 1);
+    }
+
     private TrumpetClient createClient(){
         return TrumpetClient.create(server.host(), server.port());
     }
