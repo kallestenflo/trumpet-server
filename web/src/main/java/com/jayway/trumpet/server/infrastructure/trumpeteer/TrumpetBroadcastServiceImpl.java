@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -51,7 +52,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     }
 
     @Override
-    public void broadcast(Trumpet trumpet) {
+    public void broadcast(Trumpet trumpet, Map<String, URI> links) {
         try {
             logger.debug("Broadcasting trumpet");
 

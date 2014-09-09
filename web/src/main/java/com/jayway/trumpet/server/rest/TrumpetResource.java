@@ -4,6 +4,7 @@ package com.jayway.trumpet.server.rest;
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.trumpeteer.Subscriber;
+import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpeteer;
@@ -27,15 +28,18 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -107,7 +111,50 @@ public class TrumpetResource {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
-        trumpeteer.trumpet(message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), trumpetBroadcastService::broadcast);
+        Consumer<Trumpet> broadcaster = t -> {
+
+            URI echoUri = uriInfo.getBaseUriBuilder()
+                    .path("trumpeteers")
+                    .path(trumpeteer.id)
+                    .path("echoes")
+                    .queryParam("message", message)
+                    .queryParam("messageId", t.id)
+                    .build();
+
+            trumpetBroadcastService.broadcast(t, singletonMap("echo", echoUri));
+        };
+
+        trumpeteer.trumpet(message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
+
+        return Response.ok().build();
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Path("/trumpeteers/{id}/echoes")
+    public Response echoes(@Context UriInfo uriInfo,
+                            @PathParam("id") String id,
+                            @FormParam("messageId") @NotBlank String messageId,
+                            @FormParam("message") @NotBlank String message,
+                            @FormParam("distance") @Min(1) Integer distance) {
+
+        Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
+
+        Consumer<Trumpet> broadcaster = t -> {
+
+            URI echoUri = uriInfo.getBaseUriBuilder()
+                    .path("trumpeteers")
+                    .path(trumpeteer.id)
+                    .path("echoes")
+                    .queryParam("message", message)
+                    .queryParam("messageId", t.id)
+                    .build();
+
+            trumpetBroadcastService.broadcast(t, singletonMap("echo", echoUri));
+        };
+
+
+        trumpeteer.trumpet(message, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
         return Response.ok().build();
     }

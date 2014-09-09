@@ -37,8 +37,13 @@
                                 title: item.id
                             });
                         });
-
+                        var bounds = new google.maps.LatLngBounds();
+                        data.forEach(function(item){
+                            bounds.extend(new google.maps.LatLng(item.latitude, item.longitude));
+                        });
+                        map.fitBounds(bounds);
                     }
+
                 });
             }
 
