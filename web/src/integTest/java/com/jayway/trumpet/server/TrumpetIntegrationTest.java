@@ -10,6 +10,8 @@ import org.junit.Test;
 import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.fixture.ServerRunningRule.local;
+import static com.jayway.fixture.ServerRunningRule.remote;
 import static com.jayway.fixture.ThrowableExpecter.expect;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TrumpetIntegrationTest {
 
     @ClassRule
-    public static ServerRunningRule server = new ServerRunningRule();
-    //public static ServerRunningRule server = ServerRunningRule.remote("elefant-server.herokuapp.com", 80);
+    public static ServerRunningRule server = local();
+    //public static ServerRunningRule server = remote("elefant-server.herokuapp.com", 80);
 
     private static final String MESSAGE = "Ho ho";
 
@@ -94,8 +96,10 @@ public class TrumpetIntegrationTest {
         assertThat(adjacentTrumpeteersAfter).isEqualTo(adjacentTrumpeteersBefore + 1);
     }
 
+
+
+
     private TrumpetClient createClient(){
         return TrumpetClient.create(server.host(), server.port());
     }
-
 }

@@ -16,11 +16,19 @@ public class ServerRunningRule implements TestRule {
 
     private final TrumpetServer server;
 
-    public ServerRunningRule() {
-        this(0);
+    public static ServerRunningRule remote(String host, int port){
+        return new ServerRunningRule(host, port);
     }
 
-    public ServerRunningRule(int port) {
+    public static ServerRunningRule local(){
+        return new ServerRunningRule(0);
+    }
+
+    public static ServerRunningRule local(int port){
+        return new ServerRunningRule(port);
+    }
+
+    private ServerRunningRule(int port) {
 
         Properties props = new Properties();
         props.setProperty(TrumpetServerConfig.SERVER_HTTP_PORT, String.valueOf(port));
@@ -36,10 +44,6 @@ public class ServerRunningRule implements TestRule {
         server = Mockito.mock(TrumpetServer.class);
         Mockito.when(server.getHost()).thenReturn(host);
         Mockito.when(server.getPort()).thenReturn(port);
-    }
-
-    public static ServerRunningRule remote(String host, int port){
-        return new ServerRunningRule(host, port);
     }
 
     public ServerRunningRule(Properties props) {
