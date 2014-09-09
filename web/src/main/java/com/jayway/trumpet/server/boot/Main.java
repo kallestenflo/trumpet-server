@@ -73,7 +73,10 @@ public class Main {
         System.out.println("");
         System.out.println("curl -X POST --data \"message=This is my first trumpet&distance=200\" http://localhost:9191/api/trumpeteers/1/trumpet");
         System.out.println("The form parameter distance is optional");
-        System.out.println("Response: 200 (no content)");
+        System.out.println("Response: Content-type: application/json");
+        System.out.println("{");
+        System.out.println("    \"trumpetId\": \"121212121\" ");
+        System.out.println("}");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("SUBSCRIBE");
         System.out.println("-----------------------------------------------------------------------------------------------");
