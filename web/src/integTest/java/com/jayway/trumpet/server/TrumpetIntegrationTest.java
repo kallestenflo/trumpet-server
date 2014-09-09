@@ -6,8 +6,10 @@ import com.jayway.fixture.TrumpetClientException;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.fixture.ServerRunningRule.local;
@@ -96,7 +98,27 @@ public class TrumpetIntegrationTest {
         assertThat(adjacentTrumpeteersAfter).isEqualTo(adjacentTrumpeteersBefore + 1);
     }
 
+    @Test
+    public void subscribers_are_closed_by_server() {
 
+        TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
+
+        int adjacentTrumpeteers = one.countAdjacentTrumpeteers();
+
+        TrumpetClient two = createClient().connect(55.583985D, 12.957578D);
+
+        int adjacentTrumpeteersBeforeClose = one.countAdjacentTrumpeteers();
+
+        two.diconnect();
+
+        await().atMost(5, TimeUnit.SECONDS).until(() -> !two.isConnected());
+
+        int adjacentTrumpeteersAfterClose = one.countAdjacentTrumpeteers();
+
+        assertThat(adjacentTrumpeteersBeforeClose).isEqualTo(adjacentTrumpeteers + 1);
+        assertThat(adjacentTrumpeteersAfterClose).isEqualTo(adjacentTrumpeteers);
+
+    }
 
 
     private TrumpetClient createClient(){

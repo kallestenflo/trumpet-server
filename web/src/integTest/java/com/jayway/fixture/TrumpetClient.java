@@ -2,6 +2,8 @@ package com.jayway.fixture;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.sse.EventInput;
+import org.glassfish.jersey.media.sse.EventListener;
+import org.glassfish.jersey.media.sse.EventSource;
 import org.glassfish.jersey.media.sse.InboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
 
@@ -26,6 +28,8 @@ public class TrumpetClient {
             .register(JacksonFeature.class)
             .register(SseFeature.class)
             .build();
+
+    private EventSource eventSource;
 
     private final String host;
     private final int port;
@@ -56,6 +60,16 @@ public class TrumpetClient {
         return messages.size() == numberOfMessages;
     }
 
+    public void diconnect(){
+        if(eventSource != null && eventSource.isOpen()){
+            eventSource.close();;
+        }
+    }
+
+    public boolean isConnected(){
+        return eventSource != null && eventSource.isOpen();
+    }
+
     public TrumpetClient connect(Double latitude, Double longitude){
         WebTarget target = client.target("http://" + host + ":" + port + "/api")
                 .queryParam("latitude", latitude)
@@ -68,24 +82,10 @@ public class TrumpetClient {
         trumpetUri = read(ep, "_links.trumpet.href");
         inRangeUri = read(ep, "_links.in-range.href");
 
-        Thread thread = new Thread(){
-            @Override
-            public void run() {
-                WebTarget target = client.target(subscribeUri);
-
-                EventInput eventInput = target.request().get(EventInput.class);
-                while (!eventInput.isClosed()) {
-                    final InboundEvent inboundEvent = eventInput.read();
-                    if (inboundEvent == null) {
-                        break;
-                    }
-                    Map<String, Object> trumpet = inboundEvent.readData(Map.class);
-
-                    messages.add(new TrumpetMessage(trumpet));
-                }
-            }
-        };
-        thread.start();
+        eventSource = EventSource.target(client.target(subscribeUri)).build();
+        EventListener listener = inboundEvent -> messages.add(new TrumpetMessage(inboundEvent.readData(Map.class)));
+        eventSource.register(listener, "trumpet");
+        eventSource.open();
 
         return this;
     }

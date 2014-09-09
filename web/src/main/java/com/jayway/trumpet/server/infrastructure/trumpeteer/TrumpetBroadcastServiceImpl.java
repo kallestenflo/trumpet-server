@@ -83,8 +83,6 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
         public void write(Map<String, Object> trumpetPayload) throws IOException {
 
-
-
             OutboundEvent outboundEvent = new OutboundEvent.Builder()
                     .name("trumpet")
                     .data(trumpetPayload)
