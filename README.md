@@ -1,26 +1,6 @@
-trumpet-server
-==============
+Deploy to Heroku
+================
 
-
-POST /trupeteers/{trupeteerId}/trumpets
-PUT  /trupeteers/{trupeteerId}/location
-
-
-GET  /trupeteers/{trupeteerId}/subscritption
-
-
-Location {latidude, longitude}
-
----------------------------------------------
-
-Trumpeteer{id, location}
-Trumpet{message}
-TrumpetEvent{id, trumpeteerId, message, location}
-
----------------------------------------------
-
-Subscription{trumpeteerId} 
-SubscriberLocationResolver -> TrumpetEventListener
-
-
-
+If you don't have heroku-toolbelt installed, install it.
+ 
+* brew install heroku-toolbelt     

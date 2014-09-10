@@ -59,3 +59,4 @@ task integTest(type: Test) {
     classpath = sourceSets.integTest.runtimeClasspath
 }
 check.dependsOn(integTest)
+build.dependsOn(shadowJar)

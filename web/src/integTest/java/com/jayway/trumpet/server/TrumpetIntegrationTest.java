@@ -4,6 +4,7 @@ import com.jayway.fixture.ServerRunningRule;
 import com.jayway.fixture.TrumpetClient;
 import com.jayway.fixture.TrumpetClientException;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -95,6 +96,7 @@ public class TrumpetIntegrationTest {
     }
 
     @Test
+    @Ignore
     public void subscribers_are_closed_by_server() {
 
         TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
