@@ -82,7 +82,6 @@ public class TrumpetResource {
         entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
         entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpets").build());
         entryPoint.addLink("me", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).build());
-        entryPoint.addLink("self", uriInfo.getRequestUri());
 
         return Response.ok(entryPoint).build();
     }
