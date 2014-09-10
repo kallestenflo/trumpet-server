@@ -18,6 +18,7 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
 }
 
+
 buildscript {
     repositories {
         jcenter()
@@ -26,3 +27,6 @@ buildscript {
         classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
     }
 }
+
+//Task used by Heroku for staging
+task stage(dependsOn: [':web:clean', 'web:shadowJar']) {}
