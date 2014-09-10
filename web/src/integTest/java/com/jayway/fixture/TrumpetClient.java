@@ -1,10 +1,8 @@
 package com.jayway.fixture;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
-import org.glassfish.jersey.media.sse.EventInput;
 import org.glassfish.jersey.media.sse.EventListener;
 import org.glassfish.jersey.media.sse.EventSource;
-import org.glassfish.jersey.media.sse.InboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
 
 import javax.ws.rs.client.Client;
@@ -37,7 +35,7 @@ public class TrumpetClient {
     private String locationUri;
     private String subscribeUri;
     private String trumpetUri;
-    private String inRangeUri;
+    private String meUri;
 
 
     private final List<TrumpetMessage> messages = new CopyOnWriteArrayList<>();
@@ -80,7 +78,7 @@ public class TrumpetClient {
         locationUri = read(ep, "_links.location.href");
         subscribeUri = read(ep, "_links.subscribe.href");
         trumpetUri = read(ep, "_links.trumpet.href");
-        inRangeUri = read(ep, "_links.in-range.href");
+        meUri = read(ep, "_links.me.href");
 
         eventSource = EventSource.target(client.target(subscribeUri)).build();
         EventListener listener = inboundEvent -> messages.add(new TrumpetMessage(inboundEvent.readData(Map.class)));
@@ -98,8 +96,8 @@ public class TrumpetClient {
         return messages.get(index);
     }
 
-    public int countAdjacentTrumpeteers(){
-        WebTarget target = client.target(inRangeUri);
+    public int countTrumpeteersInRange(){
+        WebTarget target = client.target(meUri);
 
         Response response = target.request().get();
 
@@ -108,7 +106,7 @@ public class TrumpetClient {
         }
         Map<String, Object> entity = response.readEntity(Map.class);
 
-        return (Integer) entity.get("count");
+        return (Integer) entity.get("trumpeteersInRange");
     }
 
     public Map<String, Object> echo(TrumpetMessage message){
@@ -142,7 +140,7 @@ public class TrumpetClient {
         return response.readEntity(Map.class);
     }
 
-    public long updateLocation(Double latitude, Double longitude){
+    public void updateLocation(Double latitude, Double longitude){
         WebTarget target = client.target(locationUri);
 
         Form form = new Form();
@@ -152,14 +150,8 @@ public class TrumpetClient {
         Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
                 .put(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
 
-        Map<String, Object> entity = response.readEntity(Map.class);
-
-        Integer trumpeteersInRange = read(entity, "trumpeteersInRange");
-
         if(response.getStatus() != 200){
             throw new RuntimeException("Failed to update location!");
         }
-
-        return trumpeteersInRange.longValue();
     }
 }

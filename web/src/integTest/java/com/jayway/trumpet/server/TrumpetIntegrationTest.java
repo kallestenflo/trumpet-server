@@ -3,17 +3,13 @@ package com.jayway.trumpet.server;
 import com.jayway.fixture.ServerRunningRule;
 import com.jayway.fixture.TrumpetClient;
 import com.jayway.fixture.TrumpetClientException;
-import com.jayway.jsonpath.JsonPath;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.mockito.Matchers;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.fixture.ServerRunningRule.local;
-import static com.jayway.fixture.ServerRunningRule.remote;
 import static com.jayway.fixture.ThrowableExpecter.expect;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,11 +54,11 @@ public class TrumpetIntegrationTest {
     public void number_of_trumpeteers_in_range_is_returned_when_location_is_updated() {
         TrumpetClient trumpeteer = createClient().connect(55.583985D, 12.957578D);
 
-        long inRangeBefore = trumpeteer.updateLocation(55.583985D, 12.957578D);
+        long inRangeBefore = trumpeteer.countTrumpeteersInRange();
 
         createClient().connect(55.583985D, 12.957578D);
 
-        long inRangeAfter = trumpeteer.updateLocation(55.583985D, 12.957578D);
+        long inRangeAfter = trumpeteer.countTrumpeteersInRange();
 
         assertThat(inRangeAfter - inRangeBefore).isEqualTo(1);
     }
@@ -89,11 +85,11 @@ public class TrumpetIntegrationTest {
     public void adjacent_trumpeteers_can_be_counted() {
         TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
 
-        int adjacentTrumpeteersBefore = one.countAdjacentTrumpeteers();
+        int adjacentTrumpeteersBefore = one.countTrumpeteersInRange();
 
         TrumpetClient two = createClient().connect(55.583985D, 12.957578D);
 
-        int adjacentTrumpeteersAfter = one.countAdjacentTrumpeteers();
+        int adjacentTrumpeteersAfter = one.countTrumpeteersInRange();
 
         assertThat(adjacentTrumpeteersAfter).isEqualTo(adjacentTrumpeteersBefore + 1);
     }
@@ -103,17 +99,17 @@ public class TrumpetIntegrationTest {
 
         TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
 
-        int adjacentTrumpeteers = one.countAdjacentTrumpeteers();
+        int adjacentTrumpeteers = one.countTrumpeteersInRange();
 
         TrumpetClient two = createClient().connect(55.583985D, 12.957578D);
 
-        int adjacentTrumpeteersBeforeClose = one.countAdjacentTrumpeteers();
+        int adjacentTrumpeteersBeforeClose = one.countTrumpeteersInRange();
 
         two.diconnect();
 
         await().atMost(5, TimeUnit.SECONDS).until(() -> !two.isConnected());
 
-        int adjacentTrumpeteersAfterClose = one.countAdjacentTrumpeteers();
+        int adjacentTrumpeteersAfterClose = one.countTrumpeteersInRange();
 
         assertThat(adjacentTrumpeteersBeforeClose).isEqualTo(adjacentTrumpeteers + 1);
         assertThat(adjacentTrumpeteersAfterClose).isEqualTo(adjacentTrumpeteers);

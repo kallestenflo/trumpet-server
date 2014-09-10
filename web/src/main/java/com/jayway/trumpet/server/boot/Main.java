@@ -53,7 +53,7 @@ public class Main {
         System.out.println("        \"location\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/location\" },");
         System.out.println("        \"subscribe\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/subscription\" },");
         System.out.println("        \"trumpet\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/trumpet\" }, ");
-        System.out.println("        \"adjacent\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/adjacent\" }, ");
+        System.out.println("        \"me\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1\" }, ");
         System.out.println("        \"self\": { \"href\" : \"http://localhost:9191/api/?latitude=55.583985&longitude=12.957578\" }");
         System.out.println("    }");
         System.out.println("}");
@@ -62,10 +62,7 @@ public class Main {
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
         System.out.println("curl -X PUT -H \"Accept: application/json\" --data \"latitude=55.583985&longitude=12.957578&accuracy=10\" http://localhost:9191/api/trumpeteers/1/location");
-        System.out.println("Response: Content-type: application/json");
-        System.out.println("{");
-        System.out.println("    \"trumpeteersInRange\": 12 ");
-        System.out.println("}");
+        System.out.println("Response: 200 no content");
         System.out.println("");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("TRUMPET");
