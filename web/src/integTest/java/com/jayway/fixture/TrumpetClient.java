@@ -60,7 +60,8 @@ public class TrumpetClient {
 
     public void diconnect(){
         if(eventSource != null && eventSource.isOpen()){
-            eventSource.close();;
+            eventSource.close();
+            eventSource = null;
         }
     }
 

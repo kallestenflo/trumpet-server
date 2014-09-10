@@ -57,12 +57,14 @@ public class TrumpetResource {
     private final TrumpetBroadcastService trumpetBroadcastService;
     private final TrumpetSubscriptionService trumpetSubscriptionService;
 
-    public TrumpetResource(TrumpetDomainConfig config, TrumpetBroadcastService trumpetBroadcastService,
+    public TrumpetResource(TrumpetDomainConfig config,
+                           TrumpeteerRepository trumpeteerRepository,
+                           TrumpetBroadcastService trumpetBroadcastService,
                            TrumpetSubscriptionService trumpetSubscriptionService) {
         this.config = config;
         this.trumpetBroadcastService = trumpetBroadcastService;
         this.trumpetSubscriptionService = trumpetSubscriptionService;
-        this.trumpeteerRepository = new TrumpeteerRepository(config);
+        this.trumpeteerRepository = trumpeteerRepository;
         this.trumpeteerNotFound = () -> new WebApplicationException("Trumpeteer not found!", Response.Status.NOT_FOUND);
     }
 

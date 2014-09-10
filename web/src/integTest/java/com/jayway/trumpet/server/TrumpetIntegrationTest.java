@@ -4,7 +4,6 @@ import com.jayway.fixture.ServerRunningRule;
 import com.jayway.fixture.TrumpetClient;
 import com.jayway.fixture.TrumpetClientException;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -96,26 +95,18 @@ public class TrumpetIntegrationTest {
     }
 
     @Test
-    @Ignore
-    public void subscribers_are_closed_by_server() {
-
+    public void subscribers_are_closed_by_server() throws Exception {
         TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
+        one.diconnect();
 
-        int adjacentTrumpeteers = one.countTrumpeteersInRange();
+        Thread.sleep(3000);
 
         TrumpetClient two = createClient().connect(55.583985D, 12.957578D);
+        TrumpetClient three = createClient().connect(55.583985D, 12.957578D);
 
-        int adjacentTrumpeteersBeforeClose = one.countTrumpeteersInRange();
+        int inRange = two.countTrumpeteersInRange();
 
-        two.diconnect();
-
-        await().atMost(5, TimeUnit.SECONDS).until(() -> !two.isConnected());
-
-        int adjacentTrumpeteersAfterClose = one.countTrumpeteersInRange();
-
-        assertThat(adjacentTrumpeteersBeforeClose).isEqualTo(adjacentTrumpeteers + 1);
-        assertThat(adjacentTrumpeteersAfterClose).isEqualTo(adjacentTrumpeteers);
-
+        assertThat(inRange).isEqualTo(1);
     }
 
 

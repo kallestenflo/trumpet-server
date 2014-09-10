@@ -48,11 +48,15 @@ public class TrumpeteerRepository {
         return Optional.ofNullable(trumpeteers.get(id));
     }
 
+    public void delete(String id){
+        trumpeteers.remove(id);
+    }
+
     public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, Integer maxDistance){
 
         Integer distance = min(maxDistance, config.trumpeteerMaxDistance());
 
-        Long inRange = trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, distance)).count() - 1;
+        Long inRange = trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, distance) && !trumpeteer.id.equals(t.id) ).count();
 
         logger.debug("There are {} trumpeteer(s) in range of trumpeteer {}", inRange, trumpeteer.id);
 

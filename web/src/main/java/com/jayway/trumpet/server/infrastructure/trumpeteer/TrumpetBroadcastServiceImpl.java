@@ -18,6 +18,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, TrumpetSubscriptionService {
 
@@ -34,19 +35,20 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         }
     }, Integer.MIN_VALUE);
 
-    public TrumpetBroadcastServiceImpl(TrumpetDomainConfig config) {
+    public TrumpetBroadcastServiceImpl(TrumpetDomainConfig config, Consumer<String> trumpeteerDeleter) {
 
         TimerTask purgeTask = new TimerTask() {
             @Override
             public void run() {
-                long now = System.currentTimeMillis();
-                subscribers.values().stream().filter(s -> s.isStale(now)).forEach(s -> {
+                subscribers.values().stream().filter(s -> s.isStale(config.trumpeteerStaleThreshold())).forEach(s -> {
+                    logger.debug("Purging stale subscriber {}", s.id);
                     s.closeChannel();
                     subscribers.remove(s.id);
+                    trumpeteerDeleter.accept(s.id);
                 });
             }
         };
-        purgeStaleTrumpeteersTimer.schedule(purgeTask, config.trumpeteerPurgeInterval(), config.trumpeteerPurgeInterval());
+        purgeStaleTrumpeteersTimer.schedule(purgeTask, 0, config.trumpeteerPurgeInterval());
     }
 
     @Override
@@ -95,6 +97,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
         public boolean isStale(long staleThreshold) {
             return ((lastAccessed.get() + staleThreshold) < System.currentTimeMillis()) || eventOutput.isClosed();
+            //return ((lastAccessed.get() + staleThreshold) < System.currentTimeMillis());
         }
 
         public void closeChannel() {

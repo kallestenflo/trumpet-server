@@ -21,24 +21,35 @@ public class ServerRunningRule implements TestRule {
     }
 
     public static ServerRunningRule local(){
-        return new ServerRunningRule(0);
+        return local(0);
     }
 
     public static ServerRunningRule local(int port){
-        return new ServerRunningRule(port);
-    }
-
-    private ServerRunningRule(int port) {
-
         Properties props = new Properties();
-        props.setProperty(TrumpetServerConfig.SERVER_HTTP_PORT, String.valueOf(port));
-        props.setProperty(TrumpetDomainConfig.TRUMPETEER_STALE_THRESHOLD, "1000000");
-        props.setProperty(TrumpetDomainConfig.TRUMPETEER_PURGE_INTERVAL, "1000000");
+        props.setProperty(TrumpetConfig.SERVER_HTTP_PORT, String.valueOf(port));
 
-        TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class, props);
-
-        server = new TrumpetServer(config);
+        return local(props);
     }
+
+    public static ServerRunningRule local(Properties props){
+
+        if(!props.containsKey(TrumpetConfig.TRUMPETEER_STALE_THRESHOLD)) {
+            props.setProperty(TrumpetConfig.TRUMPETEER_STALE_THRESHOLD, "2000");
+        }
+        if(!props.containsKey(TrumpetConfig.TRUMPETEER_PURGE_INTERVAL)) {
+            props.setProperty(TrumpetConfig.TRUMPETEER_PURGE_INTERVAL, "1000");
+        }
+        if(!props.containsKey(TrumpetConfig.SERVER_HTTP_PORT)) {
+            props.setProperty(TrumpetConfig.SERVER_HTTP_PORT, String.valueOf(0));
+        }
+        if(!props.containsKey(TrumpetConfig.SERVER_HOST_NAME)) {
+            props.setProperty(TrumpetConfig.SERVER_HOST_NAME, "localhost");
+        }
+
+        return new ServerRunningRule(props);
+    }
+
+
 
     private ServerRunningRule(String host, int port) {
         server = Mockito.mock(TrumpetServer.class);
@@ -46,7 +57,7 @@ public class ServerRunningRule implements TestRule {
         Mockito.when(server.getPort()).thenReturn(port);
     }
 
-    public ServerRunningRule(Properties props) {
+    private ServerRunningRule(Properties props) {
         TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class, props);
 
         server = new TrumpetServer(config);
