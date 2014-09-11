@@ -1,9 +1,7 @@
 package com.jayway.fixture;
 
 import com.jayway.trumpet.server.boot.TrumpetConfig;
-import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.boot.TrumpetServer;
-import com.jayway.trumpet.server.boot.TrumpetServerConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;

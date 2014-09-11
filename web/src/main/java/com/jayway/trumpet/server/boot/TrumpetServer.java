@@ -106,8 +106,8 @@ public class TrumpetServer {
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
         TrumpeteerRepository trumpeteerRepository = new TrumpeteerRepository(config);
-        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(config, trumpeteerRepository::delete);
-        resourceConfig.register(new TrumpetResource(config, trumpeteerRepository, trumpetBroadcastService, trumpetBroadcastService));
+        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(config);
+        resourceConfig.register(new TrumpetResource(config, trumpeteerRepository, trumpetBroadcastService,  trumpetBroadcastService, trumpetBroadcastService));
 
         return new ServletContainer(resourceConfig);
     }

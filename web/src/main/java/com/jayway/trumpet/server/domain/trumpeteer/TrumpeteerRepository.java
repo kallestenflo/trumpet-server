@@ -56,7 +56,7 @@ public class TrumpeteerRepository {
 
         Integer distance = min(maxDistance, config.trumpeteerMaxDistance());
 
-        Long inRange = trumpeteers.values().stream().filter(t -> t.inRange(trumpeteer, distance) && !trumpeteer.id.equals(t.id) ).count();
+        Long inRange = trumpeteers.values().stream().filter(t -> !t.id.equals(trumpeteer.id) && t.inRange(trumpeteer, distance)).count();
 
         logger.debug("There are {} trumpeteer(s) in range of trumpeteer {}", inRange, trumpeteer.id);
 

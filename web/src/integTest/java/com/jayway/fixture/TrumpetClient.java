@@ -81,7 +81,8 @@ public class TrumpetClient {
         trumpetUri = read(ep, "_links.trumpet.href");
         meUri = read(ep, "_links.me.href");
 
-        eventSource = EventSource.target(client.target(subscribeUri)).build();
+        //eventSource = EventSource.target(client.target(subscribeUri)).build();
+        eventSource = EventSource.target(client.target(subscribeUri)).usePersistentConnections().build();
         EventListener listener = inboundEvent -> messages.add(new TrumpetMessage(inboundEvent.readData(Map.class)));
         eventSource.register(listener, "trumpet");
         eventSource.open();
