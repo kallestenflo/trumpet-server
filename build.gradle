@@ -30,3 +30,4 @@ buildscript {
 
 //Task used by Heroku for staging
 task stage(dependsOn: [':web:clean', 'web:shadowJar']) {}
+
