@@ -177,7 +177,7 @@ public class TrumpetResource {
     @GET
     @Path("/trumpeteers/{id}/subscription")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
-    public EventOutput subscription(final @PathParam("id") String id) {
+    public Response subscription(final @PathParam("id") String id) {
 
         EventOutput channel = new EventOutput();
         Subscriber subscriber = trumpeteerRepository.findById(id)
@@ -185,7 +185,7 @@ public class TrumpetResource {
                 .orElseThrow(trumpeteerNotFound);
 
         trumpetSubscriptionService.subscribe(subscriber);
-        return channel;
+        return Response.ok(channel).build();
     }
 
     @GET
