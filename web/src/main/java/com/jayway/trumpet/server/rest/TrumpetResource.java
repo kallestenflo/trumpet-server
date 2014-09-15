@@ -144,7 +144,7 @@ public class TrumpetResource {
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, trumpeteer, t);
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, t);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
@@ -168,7 +168,7 @@ public class TrumpetResource {
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, trumpeteer, t);
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, t);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
@@ -234,17 +234,17 @@ public class TrumpetResource {
         return subscriberRepository.create(id, subscriberOutput);
     }
 
-    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpeteer trumpeteer, Trumpet t) {
+    private HalRepresentation createTrumpetPayload(UriInfo uriInfo,  Trumpet t) {
         HalRepresentation trumpetPayload = new HalRepresentation();
         trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
         trumpetPayload.put("message", t.message);
         trumpetPayload.put("channel", t.channel);
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
-        trumpetPayload.put("accuracy", trumpeteer.location.accuracy);
+        trumpetPayload.put("accuracy", t.trumpeteer.location.accuracy);
         trumpetPayload.addLink("echo", uriInfo.getBaseUriBuilder()
                 .path("trumpeteers")
-                .path(trumpeteer.id)
+                .path(t.trumpeteer.id)
                 .path("echoes")
                 .queryParam("trumpetId", t.id)
                 .queryParam("message", t.message)
