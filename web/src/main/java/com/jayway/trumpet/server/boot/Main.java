@@ -78,7 +78,7 @@ public class Main {
         System.out.println("TRUMPET");
         System.out.println("-----------------------------------------------------------------------------------------------");
         System.out.println("");
-        System.out.println("curl -X POST --data \"message=This is my first trumpet&distance=200\" http://localhost:9191/api/trumpeteers/1/trumpet");
+        System.out.println("curl -X POST --data \"message=This is my first trumpet&distance=200&channel=foo\" http://localhost:9191/api/trumpeteers/1/trumpet");
         System.out.println("The form parameter distance is optional");
         System.out.println("Response: Content-type: application/json");
         System.out.println("{");
@@ -94,10 +94,11 @@ public class Main {
         System.out.println("   \"id\": \"1\", ");
         System.out.println("   \"timestamp\": 121212122, ");
         System.out.println("   \"message\": \"foo\", ");
+        System.out.println("   \"channel\": \"bar\", ");
         System.out.println("   \"distanceFromSource\": 240,");
         System.out.println("   \"accuracy\": 10");
         System.out.println("   \"_links\": {");
-        System.out.println("        \"echo\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/echo?trumpedId=xxxx&message=foo&distance=200\" },");
+        System.out.println("        \"echo\": { \"href\" : \"http://localhost:9191/api/trumpeteers/1/echo?trumpedId=xxxx&message=foo&distance=200&channel=foo\" },");
         System.out.println("    }");
         System.out.println("}");
     }
