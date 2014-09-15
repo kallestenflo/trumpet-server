@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -137,18 +138,19 @@ public class TrumpetResource {
     public Response trumpet(@Context UriInfo uriInfo,
                             @PathParam("id") String id,
                             @FormParam("message") @NotBlank String message,
+                            @FormParam("channel") @NotBlank @DefaultValue("*") String channel,
                             @FormParam("distance") @Min(1) Integer distance) {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, trumpeteer, t);
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, trumpeteer, t);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
         String trumpetId = UUID.randomUUID().toString();
 
-        trumpeteer.trumpet(trumpetId, message, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
+        trumpeteer.trumpet(trumpetId, message, channel, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
@@ -160,16 +162,17 @@ public class TrumpetResource {
                            @PathParam("id") String id,
                            @FormParam("trumpetId") @NotBlank String trumpetId,
                            @FormParam("message") @NotBlank String message,
+                           @FormParam("channel") @NotBlank @DefaultValue("*") String channel,
                            @FormParam("distance") @Min(1) Integer distance) {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, message, trumpeteer, t);
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, trumpeteer, t);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
-        trumpeteer.echo(trumpetId, message, Optional.ofNullable(distance), trumpeteersWithSubscription() , broadcaster);
+        trumpeteer.echo(trumpetId, message, channel, Optional.ofNullable(distance), trumpeteersWithSubscription() , broadcaster);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
@@ -231,19 +234,21 @@ public class TrumpetResource {
         return subscriberRepository.create(id, subscriberOutput);
     }
 
-    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, String message, Trumpeteer trumpeteer, Trumpet t) {
+    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpeteer trumpeteer, Trumpet t) {
         HalRepresentation trumpetPayload = new HalRepresentation();
         trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
         trumpetPayload.put("message", t.message);
+        trumpetPayload.put("channel", t.channel);
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
         trumpetPayload.put("accuracy", trumpeteer.location.accuracy);
         trumpetPayload.addLink("echo", uriInfo.getBaseUriBuilder()
                 .path("trumpeteers")
                 .path(trumpeteer.id)
                 .path("echoes")
-                .queryParam("message", message)
                 .queryParam("trumpetId", t.id)
+                .queryParam("message", t.message)
+                .queryParam("channel", t.channel)
                 .build());
         return trumpetPayload;
     }
