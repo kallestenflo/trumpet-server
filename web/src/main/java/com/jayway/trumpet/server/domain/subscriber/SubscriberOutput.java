@@ -10,4 +10,6 @@ public interface SubscriberOutput {
     boolean isClosed();
 
     void close();
+
+    <T> T channel();
 }

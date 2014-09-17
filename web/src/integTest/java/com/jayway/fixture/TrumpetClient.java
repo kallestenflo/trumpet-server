@@ -12,7 +12,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ public class TrumpetClient {
     private final int port;
 
     private String locationUri;
-    private String subscribeUri;
+    private String subscriptionsUri;
     private String trumpetUri;
     private String meUri;
 
@@ -77,12 +76,17 @@ public class TrumpetClient {
         Map<String, Object> ep = target.request().get(Map.class);
 
         locationUri = read(ep, "_links.location.href");
-        subscribeUri = read(ep, "_links.subscribe.href");
+        subscriptionsUri = read(ep, "_links.subscriptions.href");
         trumpetUri = read(ep, "_links.trumpet.href");
         meUri = read(ep, "_links.me.href");
 
-        //eventSource = EventSource.target(client.target(subscribeUri)).build();
-        eventSource = EventSource.target(client.target(subscribeUri)).usePersistentConnections().build();
+        Form form = new Form();
+        form.param("type", "sse");
+
+        Map subscription = client.target(subscriptionsUri).request(MediaType.APPLICATION_JSON).post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Map.class);
+        String subscriptionUri = read(subscription, "_links.subscription.href");
+
+        eventSource = EventSource.target(client.target(subscriptionUri)).usePersistentConnections().build();
         EventListener listener = inboundEvent -> messages.add(new TrumpetMessage(inboundEvent.readData(Map.class)));
         eventSource.register(listener, "trumpet");
         eventSource.open();

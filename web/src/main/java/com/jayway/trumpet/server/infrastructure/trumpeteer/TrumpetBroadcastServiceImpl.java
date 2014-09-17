@@ -54,6 +54,11 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         public void close() {
 
         }
+
+        @Override
+        public <T> T channel() {
+            return null;
+        }
     };
 
     private static final Subscription NOOP_SUBSCRIPTION = new Subscription(NOOP_SUBSCRIBER, Long.MIN_VALUE);

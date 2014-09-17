@@ -5,48 +5,28 @@ import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.domain.subscriber.Subscriber;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberRepository;
-import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
-import com.jayway.trumpet.server.domain.trumpeteer.Trumpeteer;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerRepository;
+import com.jayway.trumpet.server.domain.trumpeteer.*;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.hibernate.validator.constraints.NotBlank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.jayway.trumpet.server.domain.location.Location.location;
+import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 
 @Path("/")
@@ -56,8 +36,6 @@ public class TrumpetResource {
     private final Supplier<WebApplicationException> trumpeteerNotFound;
 
     private final TrumpetDomainConfig config;
-
-    private static final Logger logger = LoggerFactory.getLogger(TrumpetResource.class);
 
     private final SubscriberRepository subscriberRepository;
     private final TrumpeteerRepository trumpeteerRepository;
@@ -89,7 +67,7 @@ public class TrumpetResource {
 
         HalRepresentation entryPoint = new HalRepresentation();
         entryPoint.put("trumpeteerId", trumpeteer.id);
-        entryPoint.addLink("subscribe", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscription").build());
+        entryPoint.addLink("subscriptions", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscriptions").build());
         entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
         entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpets").build());
         entryPoint.addLink("me", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).build());
@@ -172,22 +150,46 @@ public class TrumpetResource {
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
-        trumpeteer.echo(trumpetId, message, channel, Optional.ofNullable(distance), trumpeteersWithSubscription() , broadcaster);
+        trumpeteer.echo(trumpetId, message, channel, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
 
-    @GET
-    @Path("/trumpeteers/{id}/subscription")
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
-    public Response subscription(final @PathParam("id") String id) {
+    @POST
+    @Path("/trumpeteers/{id}/subscriptions")
+    public Response subscriptions(@Context UriInfo uriInfo,
+                                  final @PathParam("id") String id,
+                                  final @FormParam("type") @DefaultValue("sse") String type,
+                                  final @FormParam("registrationID") String registrationId) {
 
-        EventOutput channel = new EventOutput();
-        Subscriber subscriber = trumpeteerRepository.findById(id)
-                .map(t -> createSubscriber(t.id, channel))
-                .orElseThrow(trumpeteerNotFound);
+        Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
+
+        HalRepresentation entity = new HalRepresentation();
+        entity.put("type", type);
+
+        final Subscriber subscriber;
+        switch (type) {
+            case "sse":
+                subscriber = createSSESubscriber(trumpeteer.id, new EventOutput());
+                entity.addLink("subscription", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscriptions/sse").build());
+                break;
+            case "gcm":
+                subscriber = null;
+                break;
+            default:
+                throw new IllegalArgumentException(format("Invalid subscription type: %s. Valid types are: %s.", type, String.join(",", "sse", "gcm")));
+        }
 
         trumpetSubscriptionService.subscribe(subscriber);
+
+        return Response.ok(entity).build();
+    }
+
+    @GET
+    @Path("/trumpeteers/{id}/subscriptions/sse")
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    public Response subscribeSSE(final @PathParam("id") String id) {
+        EventOutput channel = subscriberRepository.findById(id).orElseThrow(trumpeteerNotFound).output().channel();
         return Response.ok(channel).build();
     }
 
@@ -205,7 +207,7 @@ public class TrumpetResource {
         return Response.ok(trumpeteers).build();
     }
 
-    private Subscriber createSubscriber(String id, EventOutput output) {
+    private Subscriber createSSESubscriber(String id, EventOutput output) {
 
         SubscriberOutput subscriberOutput = new SubscriberOutput() {
             @Override
@@ -230,11 +232,17 @@ public class TrumpetResource {
                 } catch (IOException ignore) {
                 }
             }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public <T> T channel() {
+                return (T) output;
+            }
         };
         return subscriberRepository.create(id, subscriberOutput);
     }
 
-    private HalRepresentation createTrumpetPayload(UriInfo uriInfo,  Trumpet t) {
+    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpet t) {
         HalRepresentation trumpetPayload = new HalRepresentation();
         trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
@@ -253,7 +261,7 @@ public class TrumpetResource {
         return trumpetPayload;
     }
 
-    private Stream<Trumpeteer> trumpeteersWithSubscription(){
-        return trumpeteerRepository.findAll().filter(t -> subscriberRepository.findById(t.id).isPresent() );
+    private Stream<Trumpeteer> trumpeteersWithSubscription() {
+        return trumpeteerRepository.findAll().filter(t -> subscriberRepository.findById(t.id).isPresent());
     }
 }
