@@ -6,6 +6,7 @@ import com.jayway.trumpet.server.domain.subscriber.Subscriber;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberRepository;
 import com.jayway.trumpet.server.domain.trumpeteer.*;
+import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
@@ -38,6 +39,8 @@ public class TrumpetResource {
     private final TrumpetDomainConfig config;
 
     private final SubscriberRepository subscriberRepository;
+    private final GCMBroadcaster gcmBroadcaster;
+
     private final TrumpeteerRepository trumpeteerRepository;
     private final TrumpetBroadcastService trumpetBroadcastService;
     private final TrumpetSubscriptionService trumpetSubscriptionService;
@@ -45,11 +48,13 @@ public class TrumpetResource {
     public TrumpetResource(TrumpetDomainConfig config,
                            TrumpeteerRepository trumpeteerRepository,
                            SubscriberRepository subscriberRepository,
+                           GCMBroadcaster gcmBroadcaster,
                            TrumpetBroadcastService trumpetBroadcastService,
                            TrumpetSubscriptionService trumpetSubscriptionService) {
         this.config = config;
         this.trumpeteerRepository = trumpeteerRepository;
         this.subscriberRepository = subscriberRepository;
+        this.gcmBroadcaster = gcmBroadcaster;
         this.trumpetBroadcastService = trumpetBroadcastService;
         this.trumpetSubscriptionService = trumpetSubscriptionService;
         this.trumpeteerNotFound = () -> new WebApplicationException("Trumpeteer not found!", Response.Status.NOT_FOUND);
@@ -170,11 +175,11 @@ public class TrumpetResource {
         final Subscriber subscriber;
         switch (type) {
             case "sse":
-                subscriber = createSSESubscriber(trumpeteer.id, new EventOutput());
+                subscriber = createSSESubscriber(trumpeteer.id);
                 entity.addLink("subscription", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscriptions/sse").build());
                 break;
             case "gcm":
-                subscriber = null;
+                subscriber = createGCMSubscriber(trumpeteer.id, registrationId);
                 break;
             default:
                 throw new IllegalArgumentException(format("Invalid subscription type: %s. Valid types are: %s.", type, String.join(",", "sse", "gcm")));
@@ -207,7 +212,8 @@ public class TrumpetResource {
         return Response.ok(trumpeteers).build();
     }
 
-    private Subscriber createSSESubscriber(String id, EventOutput output) {
+    private Subscriber createSSESubscriber(String id) {
+        final EventOutput output = new EventOutput();
 
         SubscriberOutput subscriberOutput = new SubscriberOutput() {
             @Override
@@ -240,6 +246,31 @@ public class TrumpetResource {
             }
         };
         return subscriberRepository.create(id, subscriberOutput);
+    }
+
+    private Subscriber createGCMSubscriber(String trumpeteerId, String registrationId) {
+        SubscriberOutput subscriberOutput = new SubscriberOutput() {
+            @Override
+            public void write(Map<String, Object> trumpet) throws IOException {
+                gcmBroadcaster.publish(registrationId, trumpet);
+            }
+
+            @Override
+            public boolean isClosed() {
+                return false;
+            }
+
+            @Override
+            public void close() {
+
+            }
+
+            @Override
+            public <T> T channel() {
+                return null;
+            }
+        };
+        return subscriberRepository.create(trumpeteerId, subscriberOutput);
     }
 
     private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpet t) {

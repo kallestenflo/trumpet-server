@@ -1,6 +1,7 @@
 package com.jayway.trumpet.server.boot;
 
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerRepository;
+import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetBroadcastServiceImpl;
 import com.jayway.trumpet.server.rest.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
@@ -99,7 +100,7 @@ public class TrumpetServer {
         return connector;
     }
 
-    private ServletContainer createJerseyServlet(TrumpetDomainConfig config) throws IOException {
+    private ServletContainer createJerseyServlet(TrumpetConfig config) throws IOException {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(JacksonFeature.class);
         resourceConfig.register(SseFeature.class);
@@ -107,7 +108,10 @@ public class TrumpetServer {
 
         TrumpeteerRepository trumpeteerRepository = new TrumpeteerRepository(config);
         TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(config);
-        resourceConfig.register(new TrumpetResource(config, trumpeteerRepository, trumpetBroadcastService,  trumpetBroadcastService, trumpetBroadcastService));
+
+        GCMBroadcaster gcmBroadcaster = new GCMBroadcaster(config);
+
+        resourceConfig.register(new TrumpetResource(config, trumpeteerRepository, trumpetBroadcastService, gcmBroadcaster, trumpetBroadcastService, trumpetBroadcastService));
 
         return new ServletContainer(resourceConfig);
     }

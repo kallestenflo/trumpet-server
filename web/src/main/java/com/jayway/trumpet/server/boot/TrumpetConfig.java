@@ -6,5 +6,5 @@ import org.aeonbits.owner.Config;
 @Config.Sources({"file:trumpet.config",
         "file:~/.trumpet.config",
         "file:/etc/trumpet.config"})
-public interface TrumpetConfig extends Config, TrumpetServerConfig, TrumpetDomainConfig {
+public interface TrumpetConfig extends Config, TrumpetServerConfig, TrumpetDomainConfig, GcmConfig {
 }
