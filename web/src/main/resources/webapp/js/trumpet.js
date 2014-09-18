@@ -13,7 +13,9 @@ $(function () {
 
                 $.ajax({
                     url: subscriptionsUrl,
-                    type: 'post',
+                    type: 'POST',
+                    data: {},
+                    contentType: "application/x-www-form-urlencoded",
                     success: function (data) {
                         var subscriptionUrl = data['_links']['subscription']['href'];
                         window.eventSource = new EventSource(subscriptionUrl);

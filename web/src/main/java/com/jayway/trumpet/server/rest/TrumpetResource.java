@@ -163,6 +163,7 @@ public class TrumpetResource {
 
     @POST
     @Path("/trumpeteers/{id}/subscriptions")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response subscriptions(@Context UriInfo uriInfo,
                                   final @PathParam("id") String id,
                                   final @FormParam("type") @DefaultValue("sse") String type,
