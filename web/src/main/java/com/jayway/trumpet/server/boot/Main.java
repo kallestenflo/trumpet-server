@@ -37,7 +37,7 @@ public class Main {
         System.out.println("Default port: 9191 ");
         System.out.println("Default host: 0.0.0.0");
         System.out.println("");
-        System.out.println("java -Dserver.http.port=9999 -Dserver.http.host=localhost -jar trumpet-server-1.0.0-shadow.jar");
+        System.out.println("java -Dserver.http.port=9999 -Dserver.http.host=localhost -Dgcm.apiKey=GCM_API_KEY -jar trumpet-server-1.0.0-shadow.jar");
 
 
         System.out.println("-----------------------------------------------------------------------------------------------");
