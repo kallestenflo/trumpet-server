@@ -29,7 +29,7 @@ dependencies {
 
     compile 'org.aeonbits.owner:owner:1.0.5.1'
 
-//    compile 'com.amazonaws:aws-java-sdk:1.8.10.1'
+    compile 'com.google.guava:guava:18.0'
 
     compile 'com.ganyo:gcm-server:1.0.2'
 

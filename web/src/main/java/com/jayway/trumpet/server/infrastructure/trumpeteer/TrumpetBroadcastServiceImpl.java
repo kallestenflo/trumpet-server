@@ -1,5 +1,9 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
+import com.google.common.eventbus.AllowConcurrentEvents;
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.domain.subscriber.Subscriber;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
@@ -16,6 +20,7 @@ import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, TrumpetSubscriptionService, SubscriberRepository {
@@ -25,6 +30,8 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     private final Map<String, Subscription> subscriptions = new ConcurrentHashMap<>();
 
     private final Timer purgeStaleTrumpeteersTimer = new Timer(true);
+
+    private final EventBus eventBus;
 
     private static final Subscriber NOOP_SUBSCRIBER = new Subscriber() {
         @Override
@@ -38,7 +45,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         }
     };
 
-    private static final SubscriberOutput NOOP_SUBSCRIBER_OUTPUT = new SubscriberOutput(){
+    private static final SubscriberOutput NOOP_SUBSCRIBER_OUTPUT = new SubscriberOutput() {
 
         @Override
         public void write(Map<String, Object> message) throws IOException {
@@ -76,16 +83,24 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
             }
         };
         purgeStaleTrumpeteersTimer.schedule(purgeTask, 0, config.trumpeteerPurgeInterval());
+        eventBus = new AsyncEventBus(Executors.newFixedThreadPool(10));
+        eventBus.register(this);
     }
 
     @Override
     public void broadcast(Trumpet trumpet, Map<String, Object> trumpetPayload) {
+        eventBus.post(new TrumpetEvent(trumpet.receiver.id, trumpetPayload));
+    }
+
+    @Subscribe
+    @AllowConcurrentEvents
+    public void handleTrumpetEvent(TrumpetEvent trumpetEvent) {
         try {
             logger.debug("Broadcasting trumpet");
 
-            subscriptions.getOrDefault(trumpet.receiver.id, NOOP_SUBSCRIPTION).write(trumpetPayload);
+            subscriptions.getOrDefault(trumpetEvent.receiverId, NOOP_SUBSCRIPTION).write(trumpetEvent.payload);
         } catch (IOException e) {
-            subscriptions.remove(trumpet.receiver.id);
+            subscriptions.remove(trumpetEvent.receiverId);
         }
     }
 
@@ -112,7 +127,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     @Override
     public Optional<Subscriber> findById(String id) {
         Subscription subscription = subscriptions.get(id);
-        if(subscription == null){
+        if (subscription == null) {
             return Optional.empty();
         } else {
             return Optional.of(subscription.subscriber);
@@ -146,7 +161,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
             subscriber.output().close();
         }
 
-        public String id(){
+        public String id() {
             return subscriber.id();
         }
     }
