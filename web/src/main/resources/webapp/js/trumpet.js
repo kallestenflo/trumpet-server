@@ -7,20 +7,27 @@ $(function () {
         $.ajax({
             url: "/api/?latitude=" + position.coords.latitude + "&longitude=" + position.coords.longitude,
             success: function (data) {
-                window.subscribeUrl = data['_links']["subscribe"]["href"];
+                window.subscriptionsUrl = data['_links']["subscriptions"]["href"];
                 window.trumpetUrl = data['_links']["trumpet"]["href"];
                 window.locationUrl = data['_links']["location"]["href"];
 
-                window.eventSource = new EventSource(subscribeUrl);
-                window.eventSource.addEventListener('trumpet', function (event) {
-                    var json = JSON.parse(event.data);
-                    $('#trumpets').prepend("<div class='alert alert-info'>" + json.message + " (" + json.distanceFromSource + " meters)</div>");
-                    $("#elefant-mascot").effect("shake");
+                $.ajax({
+                    url: subscriptionsUrl,
+                    type: 'post',
+                    success: function (data) {
+                        var subscriptionUrl = data['_links']['subscription']['href'];
+                        window.eventSource = new EventSource(subscriptionUrl);
+                        window.eventSource.addEventListener('trumpet', function (event) {
+                            var json = JSON.parse(event.data);
+                            $('#trumpets').prepend("<div class='alert alert-info'>" + json.message + " (" + json.distanceFromSource + " meters)</div>");
+                            $("#elefant-mascot").effect("shake");
 
-                    var msg = new SpeechSynthesisUtterance(json.message);
-                    window.speechSynthesis.speak(msg);
+                            var msg = new SpeechSynthesisUtterance(json.message);
+                            window.speechSynthesis.speak(msg);
 
-                }, false);
+                        }, false);
+                    }
+                });
             }
         });
     }
