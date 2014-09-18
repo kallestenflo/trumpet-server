@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.jayway.trumpet.server.domain.location.Location.location;
+import static com.jayway.trumpet.server.rest.HalRepresentation.hal;
 import static java.lang.String.format;
 import static java.util.Collections.singletonMap;
 
@@ -70,7 +71,7 @@ public class TrumpetResource {
 
         Trumpeteer trumpeteer = trumpeteerRepository.createTrumpeteer(latitude, longitude, accuracy);
 
-        HalRepresentation entryPoint = new HalRepresentation();
+        HalRepresentation entryPoint = hal();
         entryPoint.put("trumpeteerId", trumpeteer.id);
         entryPoint.addLink("subscriptions", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscriptions").build());
         entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
@@ -92,7 +93,7 @@ public class TrumpetResource {
 
         int count = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, distance);
 
-        HalRepresentation representation = new HalRepresentation();
+        HalRepresentation representation = hal();
         representation.put("trumpeteersInRange", count);
 
         return Response.ok(representation).build();
@@ -169,7 +170,7 @@ public class TrumpetResource {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
-        HalRepresentation entity = new HalRepresentation();
+        HalRepresentation entity = hal().withLinks();
         entity.put("type", type);
 
         final Subscriber subscriber;
