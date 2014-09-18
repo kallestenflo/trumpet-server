@@ -1,4 +1,4 @@
-package com.jayway.trumpet.server.infrastructure.trumpeteer;
+package com.jayway.trumpet.server.infrastructure.event;
 
 import java.util.Collections;
 import java.util.Map;

@@ -1,6 +1,7 @@
 package com.jayway.trumpet.server.boot;
 
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerRepository;
+import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetBroadcastServiceImpl;
 import com.jayway.trumpet.server.rest.TrumpetResource;
@@ -107,7 +108,7 @@ public class TrumpetServer {
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
         TrumpeteerRepository trumpeteerRepository = new TrumpeteerRepository(config);
-        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(config);
+        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), config);
 
         GCMBroadcaster gcmBroadcaster = new GCMBroadcaster(config);
 

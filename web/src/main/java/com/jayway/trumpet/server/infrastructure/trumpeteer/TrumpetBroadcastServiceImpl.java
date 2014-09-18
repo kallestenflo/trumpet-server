@@ -11,6 +11,9 @@ import com.jayway.trumpet.server.domain.subscriber.SubscriberRepository;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
+import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
+import com.jayway.trumpet.server.infrastructure.event.TrumpetEvent;
+import com.jayway.trumpet.server.infrastructure.event.TrumpetEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +34,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     private final Timer purgeStaleTrumpeteersTimer = new Timer(true);
 
-    private final EventBus eventBus;
+    private final TrumpetEventBus eventBus;
 
     private static final Subscriber NOOP_SUBSCRIBER = new Subscriber() {
         @Override
@@ -70,7 +73,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     private static final Subscription NOOP_SUBSCRIPTION = new Subscription(NOOP_SUBSCRIBER, Long.MIN_VALUE);
 
-    public TrumpetBroadcastServiceImpl(TrumpetDomainConfig config) {
+    public TrumpetBroadcastServiceImpl(TrumpetEventBus eventBus, TrumpetDomainConfig config) {
 
         TimerTask purgeTask = new TimerTask() {
             @Override
@@ -83,18 +86,16 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
             }
         };
         purgeStaleTrumpeteersTimer.schedule(purgeTask, 0, config.trumpeteerPurgeInterval());
-        eventBus = new AsyncEventBus(Executors.newFixedThreadPool(10));
-        eventBus.register(this);
+        this.eventBus = eventBus;
+        this.eventBus.subscribe(this::handleTrumpetEvent);
     }
 
     @Override
     public void broadcast(Trumpet trumpet, Map<String, Object> trumpetPayload) {
-        eventBus.post(new TrumpetEvent(trumpet.receiver.id, trumpetPayload));
+        eventBus.publish(new TrumpetEvent(trumpet.receiver.id, trumpetPayload));
     }
 
-    @Subscribe
-    @AllowConcurrentEvents
-    public void handleTrumpetEvent(TrumpetEvent trumpetEvent) {
+    private void handleTrumpetEvent(TrumpetEvent trumpetEvent) {
         try {
             logger.debug("Broadcasting trumpet");
 
