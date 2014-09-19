@@ -21,7 +21,12 @@ $(function () {
                         window.eventSource = new EventSource(subscriptionUrl);
                         window.eventSource.addEventListener('trumpet', function (event) {
                             var json = JSON.parse(event.data);
-                            $('#trumpets').prepend("<div class='alert alert-info'>" + json.message + " (" + json.distanceFromSource + " meters)</div>");
+                            var message = "";
+                            if (json.channel !== null) {
+                                message += "[" + json.channel + "] ";
+                            }
+                            message += json.message + " (" + json.distanceFromSource + " meters)";
+                            $('#trumpets').prepend("<div class='alert alert-info'>" + message + "</div>");
                             $("#elefant-mascot").effect("shake");
 
                             var msg = new SpeechSynthesisUtterance(json.message);
