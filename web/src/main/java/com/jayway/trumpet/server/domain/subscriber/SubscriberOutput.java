@@ -2,6 +2,7 @@ package com.jayway.trumpet.server.domain.subscriber;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 public interface SubscriberOutput {
 
@@ -11,5 +12,5 @@ public interface SubscriberOutput {
 
     void close();
 
-    <T> T channel();
+    <T> Optional<T> channel();
 }

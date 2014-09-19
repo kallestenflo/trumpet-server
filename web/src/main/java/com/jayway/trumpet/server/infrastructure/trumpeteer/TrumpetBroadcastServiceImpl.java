@@ -1,9 +1,5 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
-import com.google.common.eventbus.AllowConcurrentEvents;
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
 import com.jayway.trumpet.server.domain.subscriber.Subscriber;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
@@ -11,7 +7,6 @@ import com.jayway.trumpet.server.domain.subscriber.SubscriberRepository;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
-import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEvent;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEventBus;
 import org.slf4j.Logger;
@@ -23,14 +18,14 @@ import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, TrumpetSubscriptionService, SubscriberRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpetBroadcastServiceImpl.class);
 
-    private final Map<String, Subscription> subscriptions = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Subscription> subscriptions = new ConcurrentHashMap<>();
 
     private final Timer purgeStaleTrumpeteersTimer = new Timer(true);
 
@@ -39,6 +34,11 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     private static final Subscriber NOOP_SUBSCRIBER = new Subscriber() {
         @Override
         public String id() {
+            return null;
+        }
+
+        @Override
+        public String linkId() {
             return null;
         }
 
@@ -66,7 +66,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         }
 
         @Override
-        public <T> T channel() {
+        public <T> Optional<T> channel() {
             return null;
         }
     };
@@ -107,15 +107,21 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     @Override
     public void subscribe(Subscriber subscriber) {
+        findExistingSubscriberWithSameLinkIdAs(subscriber).map(Subscriber::id).ifPresent(subscriptions::remove);
         subscriptions.put(subscriber.id(), new Subscription(subscriber, System.currentTimeMillis()));
     }
 
     @Override
-    public Subscriber create(String id, SubscriberOutput output) {
+    public Subscriber create(String id, String linkId, SubscriberOutput output) {
         return new Subscriber() {
             @Override
             public String id() {
                 return id;
+            }
+
+            @Override
+            public String linkId() {
+                return linkId;
             }
 
             @Override
@@ -135,6 +141,10 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         }
     }
 
+
+    public int numberOfSubscribers() {
+        return subscriptions.size();
+    }
 
     private static class Subscription {
         public final Subscriber subscriber;
@@ -165,5 +175,11 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         public String id() {
             return subscriber.id();
         }
+    }
+
+    private Optional<Subscriber> findExistingSubscriberWithSameLinkIdAs(Subscriber subscriber) {
+        return subscriptions.entrySet().stream().
+                filter(keyValue -> keyValue.getValue().subscriber.linkId().equals(subscriber.linkId())).
+                map(entry -> entry.getValue().subscriber).findFirst();
     }
 }

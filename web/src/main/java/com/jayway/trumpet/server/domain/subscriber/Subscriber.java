@@ -4,5 +4,7 @@ public interface Subscriber  {
 
     String id();
 
+    String linkId();
+
     SubscriberOutput output();
 }

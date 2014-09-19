@@ -196,7 +196,7 @@ public class TrumpetResource {
     @Path("/trumpeteers/{id}/subscriptions/sse")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response subscribeSSE(final @PathParam("id") String id) {
-        EventOutput channel = subscriberRepository.findById(id).orElseThrow(trumpeteerNotFound).output().channel();
+        EventOutput channel = (EventOutput) subscriberRepository.findById(id).orElseThrow(trumpeteerNotFound).output().channel().get();
         return Response.ok(channel).build();
     }
 
@@ -243,11 +243,11 @@ public class TrumpetResource {
 
             @SuppressWarnings("unchecked")
             @Override
-            public <T> T channel() {
-                return (T) output;
+            public <T> Optional<T> channel() {
+                return Optional.of((T) output);
             }
         };
-        return subscriberRepository.create(id, subscriberOutput);
+        return subscriberRepository.create(id, UUID.randomUUID().toString(), subscriberOutput);
     }
 
     private Subscriber createGCMSubscriber(String trumpeteerId, String registrationId) {
@@ -268,11 +268,11 @@ public class TrumpetResource {
             }
 
             @Override
-            public <T> T channel() {
-                return null;
+            public <T> Optional<T> channel() {
+                return Optional.empty();
             }
         };
-        return subscriberRepository.create(trumpeteerId, subscriberOutput);
+        return subscriberRepository.create(trumpeteerId, registrationId, subscriberOutput);
     }
 
     private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpet t) {

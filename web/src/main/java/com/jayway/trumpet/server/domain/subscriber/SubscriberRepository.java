@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public interface SubscriberRepository {
 
-    Subscriber create(String id, SubscriberOutput output);
+    Subscriber create(String id, String linkId, SubscriberOutput output);
 
     Optional<Subscriber> findById(String id);
 }
