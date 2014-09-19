@@ -14,6 +14,7 @@ import static java.util.Objects.requireNonNull;
 public class Trumpeteer {
 
     private static final Logger logger = LoggerFactory.getLogger(Trumpeteer.class);
+    private static final String DEFAULT_CHANNEL = "*";
 
 
     public final String id;
@@ -103,6 +104,9 @@ public class Trumpeteer {
 
 
     private Trumpet createTrumpet(Trumpeteer receiver, String id, long timestamp, String message, String channel) {
+        if (DEFAULT_CHANNEL.equals(channel)) {
+            channel = null;
+        }
         return Trumpet.create(this, receiver, id, message, channel, this.distanceTo(receiver, DistanceUnit.METERS).intValue(), timestamp);
     }
 

@@ -280,7 +280,7 @@ public class TrumpetResource {
         trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
         trumpetPayload.put("message", t.message);
-        trumpetPayload.put("channel", t.channel);
+        t.channel.ifPresent(channel -> trumpetPayload.put("channel", channel));
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
         trumpetPayload.put("accuracy", t.trumpeteer.location.accuracy);
         trumpetPayload.addLink("echo", uriInfo.getBaseUriBuilder()

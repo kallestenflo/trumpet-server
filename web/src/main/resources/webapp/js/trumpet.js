@@ -22,7 +22,7 @@ $(function () {
                         window.eventSource.addEventListener('trumpet', function (event) {
                             var json = JSON.parse(event.data);
                             var message = "";
-                            if (json.channel !== null) {
+                            if (json.channel !== undefined) {
                                 message += "[" + json.channel + "] ";
                             }
                             message += json.message + " (" + json.distanceFromSource + " meters)";
