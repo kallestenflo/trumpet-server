@@ -14,4 +14,6 @@ public interface TrumpeteerRepository {
     Stream<Trumpeteer> findAll();
 
     int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int distance);
+
+    void delete(String id);
 }

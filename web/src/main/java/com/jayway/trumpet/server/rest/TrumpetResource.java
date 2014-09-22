@@ -63,7 +63,7 @@ public class TrumpetResource {
     @GET
     public Response entryPoint(@Context UriInfo uriInfo) {
         HalRepresentation entryPoint = hal();
-        entryPoint.addLink("trumpeteers", uriInfo.getBaseUriBuilder().path("trumpeteers").build());
+        entryPoint.addLink("create-trumpeteer", uriInfo.getBaseUriBuilder().path("trumpeteers").build());
         return Response.ok(entryPoint).build();
     }
 
@@ -128,12 +128,12 @@ public class TrumpetResource {
     @POST
     @Path("/trumpeteers")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response subscriptions(@Context UriInfo uriInfo,
-                                  final @FormParam("latitude") @NotNull Double latitude,
-                                  final @FormParam("longitude") @NotNull Double longitude,
-                                  @FormParam("accuracy") Integer accuracy,
-                                  final @FormParam("type") @DefaultValue("sse") String type,
-                                  final @FormParam("registrationID") String registrationId) {
+    public Response createTrumpeteer(@Context UriInfo uriInfo,
+                                     final @FormParam("latitude") @NotNull Double latitude,
+                                     final @FormParam("longitude") @NotNull Double longitude,
+                                     @FormParam("accuracy") Integer accuracy,
+                                     final @FormParam("type") @DefaultValue("sse") String type,
+                                     final @FormParam("registrationID") String registrationId) {
         accuracy = Optional.ofNullable(accuracy).orElse(config.trumpeteerMaxDistance());
         final String trumpeteerId = UUID.randomUUID().toString();
         final Location location = Location.location(latitude, longitude, accuracy);
@@ -146,7 +146,7 @@ public class TrumpetResource {
         switch (type) {
             case "sse":
                 trumpeteer = createSSETrumpeteer(trumpeteerId, location);
-                entity.addLink("subscription", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("subscriptions/sse").build());
+                entity.addLink("sse-subscribe", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("subscriptions/sse").build());
                 break;
             case "gcm":
                 trumpeteer = createGCMTrumpeteer(trumpeteerId, registrationId, location);
@@ -157,9 +157,9 @@ public class TrumpetResource {
 
         trumpetSubscriptionService.subscribe(trumpeteer);
 
-        entity.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("location").build());
+        entity.addLink("update-location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("location").build());
         entity.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("trumpets").build());
-        entity.addLink("me", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).build());
+        entity.addLink("self", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).build());
 
         return Response.ok(entity).build();
     }
@@ -170,6 +170,14 @@ public class TrumpetResource {
     public Response subscribeSSE(final @PathParam("id") String id) {
         EventOutput channel = (EventOutput) trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound).output().channel().get();
         return Response.ok(channel).build();
+    }
+
+    @DELETE
+    @Path("/trumpeteers/{id}")
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    public Response deleteTrumpeteer(final @PathParam("id") String id) {
+        trumpeteerRepository.delete(id);
+        return Response.ok().build();
     }
 
     @GET

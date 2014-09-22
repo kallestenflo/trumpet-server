@@ -68,11 +68,22 @@ public class TrumpetIntegrationTest {
 
         int adjacentTrumpeteersBefore = one.countTrumpeteersInRange();
 
-        TrumpetClient two = createClient().connect(55.583985D, 12.957578D);
+        createClient().connect(55.583985D, 12.957578D);
 
         int adjacentTrumpeteersAfter = one.countTrumpeteersInRange();
 
         assertThat(adjacentTrumpeteersAfter).isEqualTo(adjacentTrumpeteersBefore + 1);
+    }
+
+    @Test
+    public void trumpeteers_can_be_deleted() {
+        TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
+        TrumpetClient two = createClient().connect(55.583985D, 12.957578D);
+        assertThat(two.countTrumpeteersInRange()).isEqualTo(1);
+
+        one.delete();
+
+        assertThat(two.countTrumpeteersInRange()).isEqualTo(0);
     }
 
     @Ignore

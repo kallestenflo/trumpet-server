@@ -8,13 +8,13 @@ $(function () {
             url: "/api/",
             success: function (data) {
                 $.ajax({
-                    url: data['_links']["trumpeteers"]["href"],
+                    url: data['_links']["create-trumpeteer"]["href"],
                     type: 'POST',
                     data: {latitude: position.coords.latitude, longitude: position.coords.longitude},
                     success: function (data) {
-                        window.subscriptionUrl = data['_links']["subscription"]["href"];
+                        window.subscriptionUrl = data['_links']["sse-subscribe"]["href"];
                         window.trumpetUrl = data['_links']["trumpet"]["href"];
-                        window.locationUrl = data['_links']["location"]["href"];
+                        window.locationUrl = data['_links']["update-location"]["href"];
 
                         window.eventSource = new EventSource(subscriptionUrl);
                         window.eventSource.addEventListener('trumpet', function (event) {

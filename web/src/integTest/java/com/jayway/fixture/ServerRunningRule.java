@@ -48,7 +48,6 @@ public class ServerRunningRule implements TestRule {
     }
 
 
-
     private ServerRunningRule(String host, int port) {
         server = Mockito.mock(TrumpetServer.class);
         Mockito.when(server.getHost()).thenReturn(host);

@@ -110,6 +110,16 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         return inRange.intValue();
     }
 
+    @Override
+    public void delete(String id) {
+        Subscription subscription = trumpeteers.get(id);
+        if(subscription == null) {
+            return;
+        }
+        subscription.closeChannel();
+        trumpeteers.remove(id);
+    }
+
 
     public int numberOfSubscribers() {
         return trumpeteers.size();

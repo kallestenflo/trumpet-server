@@ -25,17 +25,19 @@ Response: 200
  ```javascript
 {
    "_links": {
-         "trumpeteers": { "href" : "http://localhost:9191/api/trumpeteers/" },
+         "create-trumpeteer": { "href" : "http://localhost:9191/api/trumpeteers/" },
     }
 }
 ```
 
-TRUMPETEERS
+CREATE TRUMPETEER
 -----------
     curl -X POST --data "type=sse&registrationID=32314234234&latitude=55.583985&longitude=12.957578&accuracy=100" http://localhost:9191/api/trumpeteers
 
 The form parameter type can be : sse | gcm
-Only type 'sse' will produce "subscription" link
+Only type 'sse' will produce "sse-subscribe" link
+Only type 'gcm' will have a registrationID parameter 
+"self" link supports GET and DELETE
 Response: Content-type: application/json
 
 ```javascript
@@ -43,13 +45,19 @@ Response: Content-type: application/json
     "type": "sse",
     "trumpeteerId" : 1,
     "_links": {
-        "subscription": { "href" : "http://localhost:9191/api/trumpeteers/1/subscription/sse" },
-        "me": { "href" : "http://localhost:9191/api/trumpeteers/1" },         
-        "location": { "href" : "http://localhost:9191/api/trumpeteers/1/location" },
-        "trumpet": { "href" : "http://localhost:9191/api/trumpeteers/1/trumpet" }
+        "sse-subscribe": { "href" : "http://localhost:9191/api/trumpeteers/1/subscription/sse" },
+        "self": { "href" : "http://localhost:9191/api/trumpeteers/1" },         
+        "update-location": { "href" : "http://localhost:9191/api/trumpeteers/1/location" },
+        "trumpet": { "href" : "http://localhost:9191/api/trumpeteers/1/trumpet" },
     }
 }
 ```
+
+DELETE TRUMPETEER
+-----------------
+    curl -X DELETE http://localhost:9191/api/trumpeteers/1
+
+Unsubscribe the supplied trumpeteers
 
 ME
 ---
@@ -63,13 +71,13 @@ Response:
 ```
 
 LOCATION
------------------------------------------------------------------------------------------------
+--------
 
     curl -X PUT -H --data "latitude=55.583985&longitude=12.957578&accuracy=10" http://localhost:9191/api/trumpeteers/1/location
 Response: 200 no content
 
 TRUMPET
------------------------------------------------------------------------------------------------
+-------
 
     curl -X POST --data "message=This is my first trumpet&distance=200&topic=foo" http://localhost:9191/api/trumpeteers/1/trumpet
 The form parameter distance is optional

@@ -31,11 +31,9 @@ public class TrumpetClient {
     private final String host;
     private final int port;
 
-    private String locationUri;
-    private String trumpeteersUri;
+    private String updateLocationUri;
     private String trumpetUri;
-    private String meUri;
-
+    private String selfUri;
 
     private final List<TrumpetMessage> messages = new CopyOnWriteArrayList<>();
 
@@ -72,18 +70,18 @@ public class TrumpetClient {
         WebTarget target = client.target("http://" + host + ":" + port + "/api");
 
         Map<String, Object> ep = target.request().get(Map.class);
-        trumpeteersUri = read(ep, "_links.trumpeteers.href");
+        String createTrumpeteerUri = read(ep, "_links.create-trumpeteer.href");
 
         Form form = new Form();
         form.param("type", "sse");
         form.param("latitude", Double.toString(latitude));
         form.param("longitude", Double.toString(longitude));
 
-        Map trumpeteer = client.target(trumpeteersUri).request(MediaType.APPLICATION_JSON).post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Map.class);
-        String subscriptionUri = read(trumpeteer, "_links.subscription.href");
-        locationUri = read(trumpeteer, "_links.location.href");
+        Map trumpeteer = client.target(createTrumpeteerUri).request(MediaType.APPLICATION_JSON).post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Map.class);
+        String subscriptionUri = read(trumpeteer, "_links.sse-subscribe.href");
+        updateLocationUri = read(trumpeteer, "_links.update-location.href");
         trumpetUri = read(trumpeteer, "_links.trumpet.href");
-        meUri = read(trumpeteer, "_links.me.href");
+        selfUri = read(trumpeteer, "_links.self.href");
 
         eventSource = EventSource.target(client.target(subscriptionUri)).usePersistentConnections().build();
         EventListener listener = inboundEvent -> messages.add(new TrumpetMessage(inboundEvent.readData(Map.class)));
@@ -102,7 +100,7 @@ public class TrumpetClient {
     }
 
     public int countTrumpeteersInRange() {
-        WebTarget target = client.target(meUri);
+        WebTarget target = client.target(selfUri);
 
         Response response = target.request().get();
 
@@ -146,7 +144,7 @@ public class TrumpetClient {
     }
 
     public void updateLocation(Double latitude, Double longitude) {
-        WebTarget target = client.target(locationUri);
+        WebTarget target = client.target(updateLocationUri);
 
         Form form = new Form();
         form.param("latitude", latitude.toString());
@@ -158,5 +156,9 @@ public class TrumpetClient {
         if (response.getStatus() != 200) {
             throw new RuntimeException("Failed to update location!");
         }
+    }
+
+    public void delete() {
+        client.target(selfUri).request().delete().getStatus();
     }
 }
