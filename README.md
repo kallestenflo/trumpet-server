@@ -32,8 +32,8 @@ Response: 200
 
 TRUMPETEERS
 -----------
+    curl -X POST --data "type=sse&registrationID=32314234234&latitude=55.583985&longitude=12.957578&accuracy=100" http://localhost:9191/api/trumpeteers
 
-curl -X POST --data "type=sse&registrationID=32314234234&latitude=55.583985&longitude=12.957578&accuracy=100" http://localhost:9191/api/trumpeteers
 The form parameter type can be : sse | gcm
 Only type 'sse' will produce "subscription" link
 Response: Content-type: application/json
