@@ -283,6 +283,7 @@ public class TrumpetResource {
         t.topic.ifPresent(topic -> trumpetPayload.put("topic", topic));
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
         trumpetPayload.put("accuracy", t.trumpeteer.location.accuracy);
+        trumpetPayload.put("sentByMe", t.sentByMe);
         trumpetPayload.addLink("echo", uriInfo.getBaseUriBuilder()
                 .path("trumpeteers")
                 .path(t.trumpeteer.id)

@@ -11,6 +11,7 @@ public class Trumpet {
     public final String message;
     public final Optional<String> topic;
     public final int distanceFromSource;
+    public final boolean sentByMe;
 
     private Trumpet(Trumpeteer trumpeteer,
                     Trumpeteer receiver,
@@ -26,6 +27,7 @@ public class Trumpet {
         this.message = message;
         this.topic = Optional.ofNullable(topic);
         this.distanceFromSource = distanceFromSource;
+        this.sentByMe = trumpeteer.id.equals(receiver.id);
     }
 
     public static Trumpet create(Trumpeteer trumpeteer, Trumpeteer receiver, String id, String message, String topic, int distanceFromSource, long timestamp) {
