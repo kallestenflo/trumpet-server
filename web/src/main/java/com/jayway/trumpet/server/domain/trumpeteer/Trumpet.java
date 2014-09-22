@@ -1,5 +1,7 @@
 package com.jayway.trumpet.server.domain.trumpeteer;
 
+import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
+
 import java.util.Optional;
 
 public class Trumpet {
@@ -27,7 +29,7 @@ public class Trumpet {
         this.message = message;
         this.topic = Optional.ofNullable(topic);
         this.distanceFromSource = distanceFromSource;
-        this.sentByMe = trumpeteer.id.equals(receiver.id);
+        this.sentByMe = trumpeteer.id().equals(receiver.id());
     }
 
     public static Trumpet create(Trumpeteer trumpeteer, Trumpeteer receiver, String id, String message, String topic, int distanceFromSource, long timestamp) {

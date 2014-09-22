@@ -63,24 +63,6 @@ public class TrumpetIntegrationTest {
     }
 
     @Test
-    public void a_trumpet_can_be_echoed() {
-        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
-        TrumpetClient echo = createClient().connect(55.584126D, 12.957406D);
-
-        sender.trumpet(MESSAGE);
-
-        await().until(() -> sender.hasReceived(1));
-        await().until(() -> echo.hasReceived(1));
-
-        echo.echo(echo.messages().get(0));
-
-        await().until(() -> sender.hasReceived(2));
-        await().until(() -> echo.hasReceived(2));
-
-        assertThat(echo.message(0).getId()).isEqualTo(echo.message(1).getId());
-    }
-
-    @Test
     public void trumpeteers_in_range_can_be_counted() {
         TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
 

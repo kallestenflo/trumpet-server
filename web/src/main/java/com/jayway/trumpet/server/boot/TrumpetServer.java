@@ -1,6 +1,5 @@
 package com.jayway.trumpet.server.boot;
 
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerRepository;
 import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetBroadcastServiceImpl;
@@ -34,15 +33,15 @@ public class TrumpetServer {
         this.server = configureServer(config);
     }
 
-    public int getPort(){
-        return ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+    public int getPort() {
+        return ((ServerConnector) server.getConnectors()[0]).getLocalPort();
     }
 
-    public String getHost(){
-        return ((ServerConnector)server.getConnectors()[0]).getHost();
+    public String getHost() {
+        return ((ServerConnector) server.getConnectors()[0]).getHost();
     }
 
-    public void start(){
+    public void start() {
         try {
             server.start();
             logger.info("Trumpet server running on port: {}", getPort());
@@ -51,9 +50,9 @@ public class TrumpetServer {
         }
     }
 
-    public void stop(){
+    public void stop() {
         try {
-            if(server.isRunning()){
+            if (server.isRunning()) {
                 server.stop();
             }
         } catch (Exception e) {
@@ -76,7 +75,7 @@ public class TrumpetServer {
             WebAppContext webAppContext = new WebAppContext();
             webAppContext.setServer(configServer);
             webAppContext.setContextPath("/");
-            if(config.resourceBase().startsWith("classpath")){
+            if (config.resourceBase().startsWith("classpath")) {
                 webAppContext.setResourceBase(getClass().getResource("/webapp").toExternalForm());
             } else {
                 webAppContext.setResourceBase(config.resourceBase());
@@ -107,12 +106,11 @@ public class TrumpetServer {
         resourceConfig.register(SseFeature.class);
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
-        TrumpeteerRepository trumpeteerRepository = new TrumpeteerRepository(config);
         TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), config);
 
         GCMBroadcaster gcmBroadcaster = new GCMBroadcaster(config);
 
-        resourceConfig.register(new TrumpetResource(config, trumpeteerRepository, trumpetBroadcastService, gcmBroadcaster, trumpetBroadcastService, trumpetBroadcastService));
+        resourceConfig.register(new TrumpetResource(config, trumpetBroadcastService, gcmBroadcaster, trumpetBroadcastService, trumpetBroadcastService));
 
         return new ServletContainer(resourceConfig);
     }

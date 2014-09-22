@@ -2,10 +2,13 @@ package com.jayway.trumpet.server.rest;
 
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.domain.subscriber.Subscriber;
+import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
-import com.jayway.trumpet.server.domain.subscriber.SubscriberRepository;
-import com.jayway.trumpet.server.domain.trumpeteer.*;
+import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
+import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
+import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -24,7 +27,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.jayway.trumpet.server.domain.location.Location.location;
 import static com.jayway.trumpet.server.rest.HalRepresentation.hal;
@@ -39,22 +41,19 @@ public class TrumpetResource {
 
     private final TrumpetDomainConfig config;
 
-    private final SubscriberRepository subscriberRepository;
+    private final TrumpeteerRepository trumpeteerRepository;
     private final GCMBroadcaster gcmBroadcaster;
 
-    private final TrumpeteerRepository trumpeteerRepository;
     private final TrumpetBroadcastService trumpetBroadcastService;
     private final TrumpetSubscriptionService trumpetSubscriptionService;
 
     public TrumpetResource(TrumpetDomainConfig config,
                            TrumpeteerRepository trumpeteerRepository,
-                           SubscriberRepository subscriberRepository,
                            GCMBroadcaster gcmBroadcaster,
                            TrumpetBroadcastService trumpetBroadcastService,
                            TrumpetSubscriptionService trumpetSubscriptionService) {
         this.config = config;
         this.trumpeteerRepository = trumpeteerRepository;
-        this.subscriberRepository = subscriberRepository;
         this.gcmBroadcaster = gcmBroadcaster;
         this.trumpetBroadcastService = trumpetBroadcastService;
         this.trumpetSubscriptionService = trumpetSubscriptionService;
@@ -62,22 +61,9 @@ public class TrumpetResource {
     }
 
     @GET
-    public Response entryPoint(@Context UriInfo uriInfo,
-                               @QueryParam("latitude") @NotNull Double latitude,
-                               @QueryParam("longitude") @NotNull Double longitude,
-                               @QueryParam("accuracy") Integer accuracy) {
-
-        accuracy = Optional.ofNullable(accuracy).orElse(config.trumpeteerMaxDistance());
-
-        Trumpeteer trumpeteer = trumpeteerRepository.createTrumpeteer(latitude, longitude, accuracy);
-
+    public Response entryPoint(@Context UriInfo uriInfo) {
         HalRepresentation entryPoint = hal();
-        entryPoint.put("trumpeteerId", trumpeteer.id);
-        entryPoint.addLink("subscriptions", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscriptions").build());
-        entryPoint.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("location").build());
-        entryPoint.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("trumpets").build());
-        entryPoint.addLink("me", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).build());
-
+        entryPoint.addLink("trumpeteers", uriInfo.getBaseUriBuilder().path("trumpeteers").build());
         return Response.ok(entryPoint).build();
     }
 
@@ -134,60 +120,46 @@ public class TrumpetResource {
 
         String trumpetId = UUID.randomUUID().toString();
 
-        trumpeteer.trumpet(trumpetId, message, topic, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
+        trumpeteer.trumpet(trumpetId, message, topic, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("/trumpeteers/{id}/echoes")
-    public Response echoes(@Context UriInfo uriInfo,
-                           @PathParam("id") String id,
-                           @FormParam("trumpetId") @NotBlank String trumpetId,
-                           @FormParam("message") @NotBlank String message,
-                           @FormParam("topic") @NotBlank @DefaultValue("*") String topic,
-                           @FormParam("distance") @Min(1) Integer distance) {
-
-        Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
-
-        Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, t);
-            trumpetBroadcastService.broadcast(t, trumpetPayload);
-        };
-
-        trumpeteer.echo(trumpetId, message, topic, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
-
-        return Response.ok(singletonMap("trumpetId", trumpetId)).build();
-    }
-
-    @POST
-    @Path("/trumpeteers/{id}/subscriptions")
+    @Path("/trumpeteers")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response subscriptions(@Context UriInfo uriInfo,
-                                  final @PathParam("id") String id,
+                                  final @FormParam("latitude") @NotNull Double latitude,
+                                  final @FormParam("longitude") @NotNull Double longitude,
+                                  @FormParam("accuracy") Integer accuracy,
                                   final @FormParam("type") @DefaultValue("sse") String type,
                                   final @FormParam("registrationID") String registrationId) {
-
-        Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
+        accuracy = Optional.ofNullable(accuracy).orElse(config.trumpeteerMaxDistance());
+        final String trumpeteerId = UUID.randomUUID().toString();
+        final Location location = Location.location(latitude, longitude, accuracy);
 
         HalRepresentation entity = hal().withLinks();
         entity.put("type", type);
+        entity.put("trumpeteerId", trumpeteerId);
 
-        final Subscriber subscriber;
+        final Trumpeteer trumpeteer;
         switch (type) {
             case "sse":
-                subscriber = createSSESubscriber(trumpeteer.id);
-                entity.addLink("subscription", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteer.id).path("subscriptions/sse").build());
+                trumpeteer = createSSETrumpeteer(trumpeteerId, location);
+                entity.addLink("subscription", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("subscriptions/sse").build());
                 break;
             case "gcm":
-                subscriber = createGCMSubscriber(trumpeteer.id, registrationId);
+                trumpeteer = createGCMTrumpeteer(trumpeteerId, registrationId, location);
                 break;
             default:
                 throw new IllegalArgumentException(format("Invalid subscription type: %s. Valid types are: %s.", type, String.join(",", "sse", "gcm")));
         }
 
-        trumpetSubscriptionService.subscribe(subscriber);
+        trumpetSubscriptionService.subscribe(trumpeteer);
+
+        entity.addLink("location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("location").build());
+        entity.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("trumpets").build());
+        entity.addLink("me", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).build());
 
         return Response.ok(entity).build();
     }
@@ -196,7 +168,7 @@ public class TrumpetResource {
     @Path("/trumpeteers/{id}/subscriptions/sse")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response subscribeSSE(final @PathParam("id") String id) {
-        EventOutput channel = (EventOutput) subscriberRepository.findById(id).orElseThrow(trumpeteerNotFound).output().channel().get();
+        EventOutput channel = (EventOutput) trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound).output().channel().get();
         return Response.ok(channel).build();
     }
 
@@ -205,16 +177,16 @@ public class TrumpetResource {
     public Response trumpeteers() {
         List<Map<String, Object>> trumpeteers = trumpeteerRepository.findAll().map(t -> {
             Map<String, Object> mapped = new HashMap<>();
-            mapped.put("id", t.id);
-            mapped.put("latitude", t.location.latitude);
-            mapped.put("longitude", t.location.longitude);
+            mapped.put("id", t.id());
+            mapped.put("latitude", t.location().latitude);
+            mapped.put("longitude", t.location().longitude);
             return mapped;
         }).collect(Collectors.toList());
 
         return Response.ok(trumpeteers).build();
     }
 
-    private Subscriber createSSESubscriber(String id) {
+    private Trumpeteer createSSETrumpeteer(String id, Location location) {
         final EventOutput output = new EventOutput();
 
         SubscriberOutput subscriberOutput = new SubscriberOutput() {
@@ -247,10 +219,10 @@ public class TrumpetResource {
                 return Optional.of((T) output);
             }
         };
-        return subscriberRepository.create(id, UUID.randomUUID().toString(), subscriberOutput);
+        return trumpeteerRepository.create(id, UUID.randomUUID().toString(), location, subscriberOutput);
     }
 
-    private Subscriber createGCMSubscriber(String trumpeteerId, String registrationId) {
+    private Trumpeteer createGCMTrumpeteer(String trumpeteerId, String registrationId, Location location) {
         SubscriberOutput subscriberOutput = new SubscriberOutput() {
             @Override
             public void write(Map<String, Object> trumpet) throws IOException {
@@ -272,7 +244,7 @@ public class TrumpetResource {
                 return Optional.empty();
             }
         };
-        return subscriberRepository.create(trumpeteerId, registrationId, subscriberOutput);
+        return trumpeteerRepository.create(trumpeteerId, registrationId, location, subscriberOutput);
     }
 
     private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpet t) {
@@ -282,20 +254,8 @@ public class TrumpetResource {
         trumpetPayload.put("message", t.message);
         t.topic.ifPresent(topic -> trumpetPayload.put("topic", topic));
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
-        trumpetPayload.put("accuracy", t.trumpeteer.location.accuracy);
+        trumpetPayload.put("accuracy", t.trumpeteer.location().accuracy);
         trumpetPayload.put("sentByMe", t.sentByMe);
-        trumpetPayload.addLink("echo", uriInfo.getBaseUriBuilder()
-                .path("trumpeteers")
-                .path(t.trumpeteer.id)
-                .path("echoes")
-                .queryParam("trumpetId", t.id)
-                .queryParam("message", t.message)
-                .queryParam("topic", t.topic)
-                .build());
         return trumpetPayload;
-    }
-
-    private Stream<Trumpeteer> trumpeteersWithSubscription() {
-        return trumpeteerRepository.findAll().filter(t -> subscriberRepository.findById(t.id).isPresent());
     }
 }

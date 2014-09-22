@@ -5,19 +5,17 @@ $(function () {
         console.log(position.coords.longitude);
 
         $.ajax({
-            url: "/api/?latitude=" + position.coords.latitude + "&longitude=" + position.coords.longitude,
+            url: "/api/",
             success: function (data) {
-                window.subscriptionsUrl = data['_links']["subscriptions"]["href"];
-                window.trumpetUrl = data['_links']["trumpet"]["href"];
-                window.locationUrl = data['_links']["location"]["href"];
-
                 $.ajax({
-                    url: subscriptionsUrl,
+                    url: data['_links']["trumpeteers"]["href"],
                     type: 'POST',
-                    data: {},
-                    contentType: "application/x-www-form-urlencoded",
+                    data: {latitude: position.coords.latitude, longitude: position.coords.longitude},
                     success: function (data) {
-                        var subscriptionUrl = data['_links']['subscription']['href'];
+                        window.subscriptionUrl = data['_links']["subscription"]["href"];
+                        window.trumpetUrl = data['_links']["trumpet"]["href"];
+                        window.locationUrl = data['_links']["location"]["href"];
+
                         window.eventSource = new EventSource(subscriptionUrl);
                         window.eventSource.addEventListener('trumpet', function (event) {
                             var json = JSON.parse(event.data);

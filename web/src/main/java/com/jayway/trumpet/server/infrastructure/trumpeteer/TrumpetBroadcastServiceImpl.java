@@ -1,12 +1,14 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
 import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
-import com.jayway.trumpet.server.domain.subscriber.Subscriber;
+import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
-import com.jayway.trumpet.server.domain.subscriber.SubscriberRepository;
+import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
+import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerImpl;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEvent;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEventBus;
 import org.slf4j.Logger;
@@ -20,71 +22,34 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
-public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, TrumpetSubscriptionService, SubscriberRepository {
+import static java.lang.Math.min;
+
+public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, TrumpetSubscriptionService, TrumpeteerRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(TrumpetBroadcastServiceImpl.class);
 
-    private final ConcurrentMap<String, Subscription> subscriptions = new ConcurrentHashMap<>();
-
-    private final Timer purgeStaleTrumpeteersTimer = new Timer(true);
+    private final ConcurrentMap<String, Subscription> trumpeteers = new ConcurrentHashMap<>();
 
     private final TrumpetEventBus eventBus;
 
-    private static final Subscriber NOOP_SUBSCRIBER = new Subscriber() {
-        @Override
-        public String id() {
-            return null;
-        }
-
-        @Override
-        public String linkId() {
-            return null;
-        }
-
-        @Override
-        public SubscriberOutput output() {
-            return NOOP_SUBSCRIBER_OUTPUT;
-        }
-    };
-
-    private static final SubscriberOutput NOOP_SUBSCRIBER_OUTPUT = new SubscriberOutput() {
-
-        @Override
-        public void write(Map<String, Object> message) throws IOException {
-
-        }
-
-        @Override
-        public boolean isClosed() {
-            return false;
-        }
-
-        @Override
-        public void close() {
-
-        }
-
-        @Override
-        public <T> Optional<T> channel() {
-            return null;
-        }
-    };
-
-    private static final Subscription NOOP_SUBSCRIPTION = new Subscription(NOOP_SUBSCRIBER, Long.MIN_VALUE);
+    private final TrumpetDomainConfig config;
 
     public TrumpetBroadcastServiceImpl(TrumpetEventBus eventBus, TrumpetDomainConfig config) {
+        this.config = config;
 
         TimerTask purgeTask = new TimerTask() {
             @Override
             public void run() {
-                subscriptions.values().stream().filter(s -> s.isStale(config.trumpeteerStaleThreshold())).forEach(s -> {
+                trumpeteers.values().stream().filter(s -> s.isStale(config.trumpeteerStaleThreshold())).forEach(s -> {
                     logger.debug("Purging stale subscriber {}", s.id());
                     s.closeChannel();
-                    subscriptions.remove(s.id());
+                    trumpeteers.remove(s.id());
                 });
             }
         };
+        Timer purgeStaleTrumpeteersTimer = new Timer(true);
         purgeStaleTrumpeteersTimer.schedule(purgeTask, 0, config.trumpeteerPurgeInterval());
         this.eventBus = eventBus;
         this.eventBus.subscribe(this::handleTrumpetEvent);
@@ -92,66 +57,70 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     @Override
     public void broadcast(Trumpet trumpet, Map<String, Object> trumpetPayload) {
-        eventBus.publish(new TrumpetEvent(trumpet.receiver.id, trumpetPayload));
+        eventBus.publish(new TrumpetEvent(trumpet.receiver.id(), trumpetPayload));
     }
 
     private void handleTrumpetEvent(TrumpetEvent trumpetEvent) {
         try {
             logger.debug("Broadcasting trumpet");
 
-            subscriptions.getOrDefault(trumpetEvent.receiverId, NOOP_SUBSCRIPTION).write(trumpetEvent.payload);
+            Subscription subscription = trumpeteers.get(trumpetEvent.receiverId);
+            if (subscription != null) {
+                subscription.write(trumpetEvent.payload);
+            }
         } catch (IOException e) {
-            subscriptions.remove(trumpetEvent.receiverId);
+            trumpeteers.remove(trumpetEvent.receiverId);
         }
     }
 
     @Override
-    public void subscribe(Subscriber subscriber) {
-        findExistingSubscriberWithSameLinkIdAs(subscriber).map(Subscriber::id).ifPresent(subscriptions::remove);
-        subscriptions.put(subscriber.id(), new Subscription(subscriber, System.currentTimeMillis()));
+    public void subscribe(Trumpeteer trumpeteer) {
+        findExistingSubscriberWithSameLinkIdAs(trumpeteer).map(Trumpeteer::id).ifPresent(trumpeteers::remove);
+        trumpeteers.put(trumpeteer.id(), new Subscription(trumpeteer, System.currentTimeMillis()));
     }
 
     @Override
-    public Subscriber create(String id, String linkId, SubscriberOutput output) {
-        return new Subscriber() {
-            @Override
-            public String id() {
-                return id;
-            }
-
-            @Override
-            public String linkId() {
-                return linkId;
-            }
-
-            @Override
-            public SubscriberOutput output() {
-                return output;
-            }
-        };
+    public Trumpeteer create(String id, String linkId, Location location, SubscriberOutput output) {
+        return new TrumpeteerImpl(id, linkId, location, output);
     }
 
     @Override
-    public Optional<Subscriber> findById(String id) {
-        Subscription subscription = subscriptions.get(id);
+    public Optional<Trumpeteer> findById(String id) {
+        Subscription subscription = trumpeteers.get(id);
         if (subscription == null) {
             return Optional.empty();
         } else {
-            return Optional.of(subscription.subscriber);
+            return Optional.of(subscription.trumpeteer);
         }
+    }
+
+    @Override
+    public Stream<Trumpeteer> findAll() {
+        return trumpeteers.values().stream().map(s -> s.trumpeteer);
+    }
+
+    @Override
+    public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int maxDistance) {
+        int distance = min(maxDistance, config.trumpeteerMaxDistance());
+
+        Long inRange = trumpeteers.values().stream().filter(subscription -> !subscription.id().equals(trumpeteer.id()) && subscription.trumpeteer.inRange(trumpeteer, distance)).count();
+
+        logger.debug("There are {} trumpeteer(s) in range of trumpeteer {}", inRange, trumpeteer.id());
+
+        return inRange.intValue();
     }
 
 
     public int numberOfSubscribers() {
-        return subscriptions.size();
+        return trumpeteers.size();
     }
 
     private static class Subscription {
-        public final Subscriber subscriber;
+        public final Trumpeteer trumpeteer;
         private final AtomicLong lastAccessed;
 
-        private Subscription(Subscriber subscriber, long lastAccessed) {
-            this.subscriber = subscriber;
+        private Subscription(Trumpeteer trumpeteer, long lastAccessed) {
+            this.trumpeteer = trumpeteer;
             this.lastAccessed = new AtomicLong(lastAccessed);
         }
 
@@ -160,26 +129,26 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         }
 
         public void write(Map<String, Object> trumpetPayload) throws IOException {
-            subscriber.output().write(trumpetPayload);
+            trumpeteer.output().write(trumpetPayload);
             updateLastAccessedTo(System.currentTimeMillis());
         }
 
         public boolean isStale(long staleThreshold) {
-            return ((lastAccessed.get() + staleThreshold) < System.currentTimeMillis()) || subscriber.output().isClosed();
+            return ((lastAccessed.get() + staleThreshold) < System.currentTimeMillis()) || trumpeteer.output().isClosed();
         }
 
         public void closeChannel() {
-            subscriber.output().close();
+            trumpeteer.output().close();
         }
 
         public String id() {
-            return subscriber.id();
+            return trumpeteer.id();
         }
     }
 
-    private Optional<Subscriber> findExistingSubscriberWithSameLinkIdAs(Subscriber subscriber) {
-        return subscriptions.entrySet().stream().
-                filter(keyValue -> keyValue.getValue().subscriber.linkId().equals(subscriber.linkId())).
-                map(entry -> entry.getValue().subscriber).findFirst();
+    private Optional<Trumpeteer> findExistingSubscriberWithSameLinkIdAs(Trumpeteer trumpeteer) {
+        return trumpeteers.entrySet().stream().
+                filter(keyValue -> keyValue.getValue().trumpeteer.linkId().equals(trumpeteer.linkId())).
+                map(entry -> entry.getValue().trumpeteer).findFirst();
     }
 }
