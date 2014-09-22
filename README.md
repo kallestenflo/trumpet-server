@@ -12,13 +12,13 @@ Commandline options
 Default port: 9191 
 Default host: 0.0.0.0
 
-java -Dserver.http.port=9999 -Dserver.http.host=localhost -Dgcm.apiKey=GCM_API_KEY -jar trumpet-server-1.0.0-shadow.jar
+    java -Dserver.http.port=9999 -Dserver.http.host=localhost -Dgcm.apiKey=GCM_API_KEY -jar trumpet-server-1.0.0-shadow.jar
 
 
 ENTRY POINT
 -----------
 
-curl "http://localhost:9191/api/" 
+    curl "http://localhost:9191/api/" 
 
 Response: 200
 
@@ -54,7 +54,7 @@ Response: Content-type: application/json
 ME
 ---
 
-curl -X GET "Accept: application/json" http://localhost:9191/api/trumpeteers/1?distance=200
+    curl -X GET "Accept: application/json" http://localhost:9191/api/trumpeteers/1?distance=200
 Response: 
 ```javascript
 {
@@ -65,13 +65,13 @@ Response:
 LOCATION
 -----------------------------------------------------------------------------------------------
 
-curl -X PUT -H --data "latitude=55.583985&longitude=12.957578&accuracy=10" http://localhost:9191/api/trumpeteers/1/location
+    curl -X PUT -H --data "latitude=55.583985&longitude=12.957578&accuracy=10" http://localhost:9191/api/trumpeteers/1/location
 Response: 200 no content
 
 TRUMPET
 -----------------------------------------------------------------------------------------------
 
-curl -X POST --data "message=This is my first trumpet&distance=200&topic=foo" http://localhost:9191/api/trumpeteers/1/trumpet
+    curl -X POST --data "message=This is my first trumpet&distance=200&topic=foo" http://localhost:9191/api/trumpeteers/1/trumpet
 The form parameter distance is optional
 Response: Content-type: application/json
 ```javascript
