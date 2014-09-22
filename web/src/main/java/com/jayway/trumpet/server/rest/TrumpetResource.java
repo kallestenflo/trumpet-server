@@ -122,7 +122,7 @@ public class TrumpetResource {
     public Response trumpet(@Context UriInfo uriInfo,
                             @PathParam("id") String id,
                             @FormParam("message") @NotBlank String message,
-                            @FormParam("channel") @NotBlank @DefaultValue("*") String channel,
+                            @FormParam("topic") @NotBlank @DefaultValue("*") String topic,
                             @FormParam("distance") @Min(1) Integer distance) {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
@@ -134,7 +134,7 @@ public class TrumpetResource {
 
         String trumpetId = UUID.randomUUID().toString();
 
-        trumpeteer.trumpet(trumpetId, message, channel, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
+        trumpeteer.trumpet(trumpetId, message, topic, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
@@ -146,7 +146,7 @@ public class TrumpetResource {
                            @PathParam("id") String id,
                            @FormParam("trumpetId") @NotBlank String trumpetId,
                            @FormParam("message") @NotBlank String message,
-                           @FormParam("channel") @NotBlank @DefaultValue("*") String channel,
+                           @FormParam("topic") @NotBlank @DefaultValue("*") String topic,
                            @FormParam("distance") @Min(1) Integer distance) {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
@@ -156,7 +156,7 @@ public class TrumpetResource {
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
-        trumpeteer.echo(trumpetId, message, channel, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
+        trumpeteer.echo(trumpetId, message, topic, Optional.ofNullable(distance), trumpeteersWithSubscription(), broadcaster);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
@@ -280,7 +280,7 @@ public class TrumpetResource {
         trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
         trumpetPayload.put("message", t.message);
-        t.channel.ifPresent(channel -> trumpetPayload.put("channel", channel));
+        t.topic.ifPresent(topic -> trumpetPayload.put("topic", topic));
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
         trumpetPayload.put("accuracy", t.trumpeteer.location.accuracy);
         trumpetPayload.addLink("echo", uriInfo.getBaseUriBuilder()
@@ -289,7 +289,7 @@ public class TrumpetResource {
                 .path("echoes")
                 .queryParam("trumpetId", t.id)
                 .queryParam("message", t.message)
-                .queryParam("channel", t.channel)
+                .queryParam("topic", t.topic)
                 .build());
         return trumpetPayload;
     }

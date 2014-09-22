@@ -22,8 +22,8 @@ $(function () {
                         window.eventSource.addEventListener('trumpet', function (event) {
                             var json = JSON.parse(event.data);
                             var message = "";
-                            if (json.channel !== undefined) {
-                                message += "[" + json.channel + "] ";
+                            if (json.topic !== undefined) {
+                                message += "[" + json.topic + "] ";
                             }
                             message += json.message + " (" + json.distanceFromSource + " meters)";
                             $('#trumpets').prepend("<div class='alert alert-info'>" + message + "</div>");
