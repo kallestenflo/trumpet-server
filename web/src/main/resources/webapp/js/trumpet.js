@@ -24,7 +24,10 @@ $(function () {
                                 message += "[" + json.topic + "] ";
                             }
                             message += json.message + " (" + json.distanceFromSource + " meters)";
-                            $('#trumpets').prepend("<div class='alert alert-info'>" + message + "</div>");
+
+                            var alertType = json.sentByMe ? 'alert-success' : 'alert-info';
+
+                            $('#trumpets').prepend("<div class='alert " + alertType + "'>" + message + "</div>");
                             $("#elefant-mascot").effect("shake");
 
                             var msg = new SpeechSynthesisUtterance(json.message);
