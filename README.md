@@ -100,6 +100,7 @@ SUBSCRIPTION (SSE)
    "message": "foo", 
    "topic": "bar", 
    "distanceFromSource": 240,
-   "accuracy": 10
+   "accuracy": 10,
+   "sentByMe": false
 }
 ```
