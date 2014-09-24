@@ -1,0 +1,40 @@
+/*
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.hidetake:gradle-ssh-plugin:0.3.12'
+    }
+}
+*/
+apply plugin: 'ssh'
+
+
+// Global settings
+ssh {
+    identity = file('/Users/kalle/.ssh/id_rsa')     // Enable public key authentication
+    knownHosts = allowAnyHosts    // Disable host key verification
+}
+
+// Add a remote host
+remotes {
+    webServer {
+        host = '54.194.143.139'
+        user = 'ec2-user'
+    }
+}
+
+task deploy(type: SshTask, dependsOn: shadowJar) {
+    description = 'Deploys an application to the server.'
+    ssh {
+        // Enable PTY allocation for sudo
+        pty = true
+    }
+    session(remotes.webServer) {
+        // Put a built WAR to the server
+        put shadowJar.archivePath, '/'
+        // Restart the application server
+        //execute 'sudo service tomcat restart'
+    }
+}

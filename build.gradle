@@ -25,6 +25,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:0.8'
+        classpath 'org.hidetake:gradle-ssh-plugin:0.3.12'
     }
 }
 
