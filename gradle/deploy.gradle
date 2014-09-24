@@ -1,26 +1,15 @@
-/*
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.hidetake:gradle-ssh-plugin:0.3.12'
-    }
-}
-*/
-apply plugin: 'ssh'
+apply plugin: 'org.hidetake.ssh'
 
 
 // Global settings
 ssh {
-    identity = file('/Users/kalle/.ssh/id_rsa')     // Enable public key authentication
-    knownHosts = allowAnyHosts    // Disable host key verification
+      agent = true
 }
 
 // Add a remote host
 remotes {
     webServer {
-        host = '54.194.143.139'
+        host = 'ec2-54-194-143-139.eu-west-1.compute.amazonaws.com'
         user = 'ec2-user'
     }
 }
@@ -33,7 +22,7 @@ task deploy(type: SshTask, dependsOn: shadowJar) {
     }
     session(remotes.webServer) {
         // Put a built WAR to the server
-        put shadowJar.archivePath, '/'
+        put "web/build/distributions/${rootProject.name}-${project.version}-shadow.jar", '/home/ec2-user'
         // Restart the application server
         //execute 'sudo service tomcat restart'
     }

@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'shadow'
-//apply from: "$rootDir/gradle/deploy.gradle"
+apply from: "$rootDir/gradle/deploy.gradle"
 
 archivesBaseName = 'trumpet-server'
 mainClassName = 'com.jayway.trumpet.server.boot.Main'
