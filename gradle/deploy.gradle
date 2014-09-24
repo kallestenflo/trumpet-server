@@ -22,7 +22,7 @@ task deploy(type: SshTask, dependsOn: shadowJar) {
     }
     session(remotes.webServer) {
         // Put a built WAR to the server
-        put "web/build/distributions/${rootProject.name}-${project.version}-shadow.jar", '/home/ec2-user'
+        put "${project.name}/build/${distsDirName}/${rootProject.name}-${project.version}-shadow.jar", '/home/ec2-user'
         // Restart the application server
         //execute 'sudo service tomcat restart'
     }
