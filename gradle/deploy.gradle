@@ -1,5 +1,8 @@
 apply plugin: 'org.hidetake.ssh'
 
+ext {
+    ec2user = project.hasProperty('ec2user') ? project.getProperty('ec2user') : 'ec2-user'
+}
 
 // Global settings
 ssh {
@@ -10,7 +13,7 @@ ssh {
 remotes {
     webServer {
         host = 'ec2-54-194-143-139.eu-west-1.compute.amazonaws.com'
-        user = 'ec2-user'
+        user = ec2user
     }
 }
 
@@ -21,9 +24,7 @@ task deploy(type: SshTask, dependsOn: shadowJar) {
         pty = true
     }
     session(remotes.webServer) {
-        // Put a built WAR to the server
-        put "${project.name}/build/${distsDirName}/${rootProject.name}-${project.version}-shadow.jar", '/home/ec2-user'
-        // Restart the application server
-        //execute 'sudo service tomcat restart'
+        put "${project.name}/build/${distsDirName}/${rootProject.name}-${project.version}-shadow.jar", "/home/$ec2user"
+        execute "sudo nohup service trumpet-server restart"
     }
 }
