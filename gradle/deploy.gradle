@@ -25,6 +25,6 @@ task deploy(type: SshTask, dependsOn: shadowJar) {
     }
     session(remotes.webServer) {
         put "${project.name}/build/${distsDirName}/${rootProject.name}-${project.version}-shadow.jar", "/home/$ec2user"
-        execute "nohup service trumpet-server restart > /dev/null 2>&1"
+        execute "sudo nohup service trumpet-server restart > /dev/null 2>&1"
     }
 }
