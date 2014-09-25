@@ -3,12 +3,14 @@ package com.jayway.trumpet.server.boot;
 import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetBroadcastServiceImpl;
+import com.jayway.trumpet.server.rest.LoggingFilter;
 import com.jayway.trumpet.server.rest.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -20,7 +22,10 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.DispatcherType;
+
 import java.io.IOException;
+import java.util.EnumSet;
 
 
 public class TrumpetServer {
@@ -71,6 +76,10 @@ public class TrumpetServer {
             ServletHolder servletHolder = new ServletHolder(createJerseyServlet(config));
             servletHolder.setInitOrder(1);
             context.addServlet(servletHolder, "/*");
+
+            FilterHolder filterHolder = new FilterHolder(new LoggingFilter(true, LoggerFactory.getLogger("API")));
+            context.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
+            //context.addFilter(LoggingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 
             WebAppContext webAppContext = new WebAppContext();
             webAppContext.setServer(configServer);

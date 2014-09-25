@@ -12,6 +12,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +77,7 @@ public class TrumpetClient {
         form.param("type", "sse");
         form.param("latitude", Double.toString(latitude));
         form.param("longitude", Double.toString(longitude));
+        form.param("bingo", "baz");
 
         Map trumpeteer = client.target(createTrumpeteerUri).request(MediaType.APPLICATION_JSON).post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Map.class);
         String subscriptionUri = read(trumpeteer, "_links.sse-subscribe.href");
