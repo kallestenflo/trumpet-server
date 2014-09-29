@@ -1,6 +1,7 @@
 package com.jayway.fixture;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 
 import static com.jayway.jsonpath.JsonPath.read;
@@ -20,6 +21,11 @@ public class TrumpetMessage {
 
     public String getId(){
         return (String) payload.get("id");
+    }
+
+    public Map<String, String> getExt(){
+        Object ext = payload.get("ext");
+        return ext != null ? (Map<String, String>) payload.get("ext") : Collections.emptyMap();
     }
 
 

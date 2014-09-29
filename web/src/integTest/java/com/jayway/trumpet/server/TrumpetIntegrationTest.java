@@ -7,6 +7,9 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.Map;
+
 import static com.jayway.awaitility.Awaitility.await;
 import static com.jayway.fixture.ServerRunningRule.local;
 import static com.jayway.fixture.ThrowableExpecter.expect;
@@ -102,6 +105,19 @@ public class TrumpetIntegrationTest {
         assertThat(inRange).isEqualTo(1);
     }
 
+
+    @Test
+    public void ext_parameters_are_included_in_trumpet() {
+        TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
+
+        one.trumpet("WITH EXT", Collections.singletonMap("ext.one", "one"));
+
+        await().until(() -> !one.messages().isEmpty());
+
+        Map<String, String> ext = one.messages().get(0).getExt();
+
+        assertThat(ext).containsEntry("one", "one");
+    }
 
     private TrumpetClient createClient(){
         return TrumpetClient.create(server.host(), server.port());

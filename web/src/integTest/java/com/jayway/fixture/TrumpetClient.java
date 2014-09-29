@@ -129,11 +129,15 @@ public class TrumpetClient {
         return response.readEntity(Map.class);
     }
 
-    public Map<String, Object> trumpet(String message) {
+    public Map<String, Object> trumpet(String message, Map<String, String> extParameters) {
         WebTarget target = client.target(trumpetUri);
 
         Form form = new Form();
         form.param("message", message);
+
+        for (Map.Entry<String, String> extParam : extParameters.entrySet()) {
+            form.param(extParam.getKey(), extParam.getValue());
+        }
 
         Response response = target.request(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
@@ -143,6 +147,10 @@ public class TrumpetClient {
         }
 
         return response.readEntity(Map.class);
+    }
+
+    public void trumpet(String message) {
+        this.trumpet(message, Collections.emptyMap());
     }
 
     public void updateLocation(Double latitude, Double longitude) {
@@ -163,4 +171,6 @@ public class TrumpetClient {
     public void delete() {
         client.target(selfUri).request().delete().getStatus();
     }
+
+
 }

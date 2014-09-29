@@ -15,6 +15,7 @@ import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -53,6 +54,7 @@ import static java.util.Collections.singletonMap;
 @Produces({MediaType.APPLICATION_JSON, "application/HAL+json"})
 public class TrumpetResource {
 
+    public static final String EXT = "ext";
     private final Supplier<WebApplicationException> trumpeteerNotFound;
 
     private final TrumpetDomainConfig config;
@@ -122,15 +124,19 @@ public class TrumpetResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Path("/trumpeteers/{id}/trumpets")
     public Response trumpet(@Context UriInfo uriInfo,
+                            @Context HttpServletRequest request,
                             @PathParam("id") String id,
                             @FormParam("message") @NotBlank String message,
                             @FormParam("topic") @NotBlank @DefaultValue("*") String topic,
                             @FormParam("distance") @Min(1) Integer distance) {
 
+
+        Map<String, String> extParameters = FormParameters.getPrefixedParameters(request, EXT);
+
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, t);
+            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, t, extParameters);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
@@ -271,7 +277,7 @@ public class TrumpetResource {
         return trumpeteerRepository.create(trumpeteerId, registrationId, location, subscriberOutput);
     }
 
-    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpet t) {
+    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpet t, Map<String, String> extParameters) {
         HalRepresentation trumpetPayload = new HalRepresentation();
         trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
@@ -280,6 +286,7 @@ public class TrumpetResource {
         trumpetPayload.put("distanceFromSource", t.distanceFromSource);
         trumpetPayload.put("accuracy", t.trumpeteer.location().accuracy);
         trumpetPayload.put("sentByMe", t.sentByMe);
+        trumpetPayload.put("ext", extParameters);
         return trumpetPayload;
     }
 }
