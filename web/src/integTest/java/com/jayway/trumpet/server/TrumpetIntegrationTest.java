@@ -110,13 +110,13 @@ public class TrumpetIntegrationTest {
     public void ext_parameters_are_included_in_trumpet() {
         TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
 
-        one.trumpet("WITH EXT", Collections.singletonMap("ext.one", "one"));
+        one.trumpet("WITH EXT", Collections.singletonMap("ext.one-key", "one-val"));
 
         await().until(() -> !one.messages().isEmpty());
 
         Map<String, String> ext = one.messages().get(0).getExt();
 
-        assertThat(ext).containsEntry("one", "one");
+        assertThat(ext).containsEntry("one-key", "one-val");
     }
 
     private TrumpetClient createClient(){
