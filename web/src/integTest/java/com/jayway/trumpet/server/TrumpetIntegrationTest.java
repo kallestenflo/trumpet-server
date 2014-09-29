@@ -7,6 +7,7 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -108,15 +109,41 @@ public class TrumpetIntegrationTest {
 
     @Test
     public void ext_parameters_are_included_in_trumpet() {
-        TrumpetClient one = createClient().connect(55.583985D, 12.957578D);
+        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
 
-        one.trumpet("WITH EXT", Collections.singletonMap("ext.one-key", "one-val"));
+        sender.trumpet("WITH EXT", Collections.singletonMap("ext.one-key", "one-val"));
 
-        await().until(() -> !one.messages().isEmpty());
+        await().until(() -> !sender.messages().isEmpty());
 
-        Map<String, String> ext = one.messages().get(0).getExt();
+        Map<String, String> ext = sender.messages().get(0).getExt();
 
         assertThat(ext).containsEntry("one-key", "one-val");
+    }
+
+    @Test
+    public void trumpets_can_not_exceed_max_length() {
+
+        String max_message = createString('A', 320);
+        String max_exceeded = createString('A', 321);
+
+        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
+
+        sender.trumpet(max_message);
+
+        await().until(() -> !sender.messages().isEmpty());
+
+        assertThat(sender.messages()).extracting("message").containsExactly(max_message);
+
+        TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(max_exceeded));
+
+        assertThat(exception.response.getStatus()).isEqualTo(400);
+
+    }
+
+    public static String createString(char character, int length) {
+        char[] chars = new char[length];
+        Arrays.fill(chars, character);
+        return new String(chars);
     }
 
     private TrumpetClient createClient(){

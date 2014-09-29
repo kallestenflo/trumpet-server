@@ -126,6 +126,7 @@ public class TrumpetClient {
             throw new TrumpetClientException(response);
         }
 
+
         return response.readEntity(Map.class);
     }
 

@@ -130,13 +130,16 @@ public class TrumpetResource {
                             @FormParam("topic") @NotBlank @DefaultValue("*") String topic,
                             @FormParam("distance") @Min(1) Integer distance) {
 
+        if(message.length() > config.messageMessageLength()){
+            throw createWebApplicationException(format("Message to long! Max length is %s", config.messageMessageLength()), Response.Status.BAD_REQUEST);
+        }
 
         Map<String, String> extParameters = FormParameters.getPrefixedParameters(request, EXT);
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
         Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(uriInfo, t, extParameters);
+            HalRepresentation trumpetPayload = createTrumpetPayload(t, extParameters);
             trumpetBroadcastService.broadcast(t, trumpetPayload);
         };
 
@@ -145,6 +148,10 @@ public class TrumpetResource {
         trumpeteer.trumpet(trumpetId, message, topic, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
+    }
+
+    private WebApplicationException createWebApplicationException(String message, Response.Status status) {
+        return new WebApplicationException(message, status);
     }
 
     @POST
@@ -163,6 +170,7 @@ public class TrumpetResource {
         HalRepresentation entity = hal().withLinks();
         entity.put("type", type);
         entity.put("trumpeteerId", trumpeteerId);
+        entity.put("messageMessageLength", config.messageMessageLength());
 
         final Trumpeteer trumpeteer;
         switch (type) {
@@ -277,7 +285,7 @@ public class TrumpetResource {
         return trumpeteerRepository.create(trumpeteerId, registrationId, location, subscriberOutput);
     }
 
-    private HalRepresentation createTrumpetPayload(UriInfo uriInfo, Trumpet t, Map<String, String> extParameters) {
+    private HalRepresentation createTrumpetPayload(Trumpet t, Map<String, String> extParameters) {
         HalRepresentation trumpetPayload = new HalRepresentation();
         trumpetPayload.put("id", t.id);
         trumpetPayload.put("timestamp", t.timestamp);
@@ -289,4 +297,5 @@ public class TrumpetResource {
         trumpetPayload.put("ext", extParameters);
         return trumpetPayload;
     }
+
 }
