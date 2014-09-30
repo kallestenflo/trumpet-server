@@ -83,7 +83,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         trumpetPayload.put("timestamp", trumpet.timestamp);
         trumpetPayload.put("message", trumpet.message);
         trumpet.topic.ifPresent(topic -> trumpetPayload.put("topic", topic));
-        trumpetPayload.put("distanceFromSource", trumpet.trumpeteer.distanceTo(trumpeteer, DistanceUnit.METERS));
+        trumpetPayload.put("distanceFromSource", trumpet.trumpeteer.distanceTo(trumpeteer, DistanceUnit.METERS).intValue());
         trumpetPayload.put("accuracy", trumpet.trumpeteer.location().accuracy);
         trumpetPayload.put("sentByMe", trumpet.trumpeteer.id().equals(trumpeteer.id()));
         trumpetPayload.put("ext", trumpet.extParameters);
