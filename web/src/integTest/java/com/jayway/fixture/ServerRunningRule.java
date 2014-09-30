@@ -1,7 +1,8 @@
 package com.jayway.fixture;
 
-import com.jayway.trumpet.server.boot.TrumpetConfig;
+import com.jayway.trumpet.server.boot.TrumpetServerConfig;
 import com.jayway.trumpet.server.boot.TrumpetServer;
+import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -24,24 +25,24 @@ public class ServerRunningRule implements TestRule {
 
     public static ServerRunningRule local(int port){
         Properties props = new Properties();
-        props.setProperty(TrumpetConfig.SERVER_HTTP_PORT, String.valueOf(port));
+        props.setProperty(TrumpetServerConfig.SERVER_HTTP_PORT, String.valueOf(port));
 
         return local(props);
     }
 
     public static ServerRunningRule local(Properties props){
 
-        if(!props.containsKey(TrumpetConfig.TRUMPETEER_STALE_THRESHOLD)) {
-            props.setProperty(TrumpetConfig.TRUMPETEER_STALE_THRESHOLD, "2000");
+        if(!props.containsKey(SubscriberConfig.TRUMPETEER_STALE_THRESHOLD)) {
+            props.setProperty(SubscriberConfig.TRUMPETEER_STALE_THRESHOLD, "2000");
         }
-        if(!props.containsKey(TrumpetConfig.TRUMPETEER_PURGE_INTERVAL)) {
-            props.setProperty(TrumpetConfig.TRUMPETEER_PURGE_INTERVAL, "1000");
+        if(!props.containsKey(SubscriberConfig.TRUMPETEER_PURGE_INTERVAL)) {
+            props.setProperty(SubscriberConfig.TRUMPETEER_PURGE_INTERVAL, "1000");
         }
-        if(!props.containsKey(TrumpetConfig.SERVER_HTTP_PORT)) {
-            props.setProperty(TrumpetConfig.SERVER_HTTP_PORT, String.valueOf(0));
+        if(!props.containsKey(TrumpetServerConfig.SERVER_HTTP_PORT)) {
+            props.setProperty(TrumpetServerConfig.SERVER_HTTP_PORT, String.valueOf(0));
         }
-        if(!props.containsKey(TrumpetConfig.SERVER_HOST_NAME)) {
-            props.setProperty(TrumpetConfig.SERVER_HOST_NAME, "localhost");
+        if(!props.containsKey(TrumpetServerConfig.SERVER_HOST_NAME)) {
+            props.setProperty(TrumpetServerConfig.SERVER_HOST_NAME, "localhost");
         }
 
         return new ServerRunningRule(props);
@@ -55,7 +56,7 @@ public class ServerRunningRule implements TestRule {
     }
 
     private ServerRunningRule(Properties props) {
-        TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class, props);
+        TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class, props);
 
         server = new TrumpetServer(config);
     }

@@ -34,7 +34,7 @@ public class TrumpetServer {
 
     private Server server;
 
-    public TrumpetServer(TrumpetConfig config) {
+    public TrumpetServer(TrumpetServerConfig config) {
         this.server = configureServer(config);
     }
 
@@ -65,7 +65,7 @@ public class TrumpetServer {
         }
     }
 
-    private Server configureServer(TrumpetConfig config) {
+    private Server configureServer(TrumpetServerConfig config) {
         try {
             Server configServer = new Server();
 
@@ -109,13 +109,13 @@ public class TrumpetServer {
         return connector;
     }
 
-    private ServletContainer createJerseyServlet(TrumpetConfig config) throws IOException {
+    private ServletContainer createJerseyServlet(TrumpetServerConfig config) throws IOException {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.register(JacksonFeature.class);
         resourceConfig.register(SseFeature.class);
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
-        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), config);
+        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), config, config);
 
         GCMBroadcaster gcmBroadcaster = new GCMBroadcaster(config);
 

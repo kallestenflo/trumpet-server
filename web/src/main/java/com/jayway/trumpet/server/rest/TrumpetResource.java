@@ -1,7 +1,7 @@
 package com.jayway.trumpet.server.rest;
 
 
-import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
@@ -57,7 +57,7 @@ public class TrumpetResource {
     public static final String EXT = "ext";
     private final Supplier<WebApplicationException> trumpeteerNotFound;
 
-    private final TrumpetDomainConfig config;
+    private final TrumpeteerConfig config;
 
     private final TrumpeteerRepository trumpeteerRepository;
     private final GCMBroadcaster gcmBroadcaster;
@@ -65,7 +65,7 @@ public class TrumpetResource {
     private final TrumpetBroadcastService trumpetBroadcastService;
     private final TrumpetSubscriptionService trumpetSubscriptionService;
 
-    public TrumpetResource(TrumpetDomainConfig config,
+    public TrumpetResource(TrumpeteerConfig config,
                            TrumpeteerRepository trumpeteerRepository,
                            GCMBroadcaster gcmBroadcaster,
                            TrumpetBroadcastService trumpetBroadcastService,
@@ -130,8 +130,8 @@ public class TrumpetResource {
                             @FormParam("topic") @NotBlank @DefaultValue("*") String topic,
                             @FormParam("distance") @Min(1) Integer distance) {
 
-        if(message.length() > config.messageMessageLength()){
-            throw createWebApplicationException(format("Message to long! Max length is %s", config.messageMessageLength()), Response.Status.BAD_REQUEST);
+        if(message.length() > config.maxMessageLength()){
+            throw createWebApplicationException(format("Message to long! Max length is %s", config.maxMessageLength()), Response.Status.BAD_REQUEST);
         }
 
         Map<String, String> extParameters = FormParameters.getPrefixedParameters(request, EXT);
@@ -170,7 +170,7 @@ public class TrumpetResource {
         HalRepresentation entity = hal().withLinks();
         entity.put("type", type);
         entity.put("trumpeteerId", trumpeteerId);
-        entity.put("messageMessageLength", config.messageMessageLength());
+        entity.put("maxMessageLength", config.maxMessageLength());
 
         final Trumpeteer trumpeteer;
         switch (type) {

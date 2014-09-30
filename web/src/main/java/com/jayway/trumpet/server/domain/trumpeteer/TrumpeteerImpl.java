@@ -22,12 +22,15 @@ public class TrumpeteerImpl implements Trumpeteer {
     public final String linkId;
     private final SubscriberOutput output;
     public Location location;
+    private final TrumpeteerConfig config;
 
-    public TrumpeteerImpl(String id, String linkId, Location location, SubscriberOutput output) {
+    public TrumpeteerImpl(String id, String linkId, Location location, SubscriberOutput output, TrumpeteerConfig config) {
         requireNonNull(linkId, "LinkId can not be null.");
         requireNonNull(location, "Location can not be null.");
         requireNonNull(output, "SubscriberOutput can not be null.");
         requireNonNull(id, "Id can not be null.");
+        requireNonNull(config, "Config can not be null.");
+        this.config = config;
         this.id = id;
         this.location = location;
         this.output = output;
@@ -63,6 +66,11 @@ public class TrumpeteerImpl implements Trumpeteer {
     @Override
     public Location location() {
         return location;
+    }
+
+    @Override
+    public int maxTrumpetDistance() {
+        return config.trumpeteerMaxDistance();
     }
 
     @Override

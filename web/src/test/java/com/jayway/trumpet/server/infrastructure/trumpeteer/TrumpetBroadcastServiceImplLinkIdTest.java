@@ -1,6 +1,7 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
-import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
+import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
@@ -19,15 +20,20 @@ import static org.mockito.Mockito.mock;
 public class TrumpetBroadcastServiceImplLinkIdTest {
 
     @Mock
-    TrumpetDomainConfig trumpetDomainConfig;
+    TrumpeteerConfig trumpeteerConfig;
+
+    @Mock
+    SubscriberConfig subscriberConfig;
+
+
     private TrumpetBroadcastServiceImpl tested;
 
     @Before public void
     given_trumpet_broadcast_service_is_created() {
-        given(trumpetDomainConfig.trumpeteerStaleThreshold()).willReturn(600000L);
-        given(trumpetDomainConfig.trumpeteerPurgeInterval()).willReturn(600000L);
+        given(subscriberConfig.trumpeteerStaleThreshold()).willReturn(600000L);
+        given(subscriberConfig.trumpeteerPurgeInterval()).willReturn(600000L);
 
-        tested = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), trumpetDomainConfig);
+        tested = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), subscriberConfig, trumpeteerConfig);
     }
 
     @Test public void

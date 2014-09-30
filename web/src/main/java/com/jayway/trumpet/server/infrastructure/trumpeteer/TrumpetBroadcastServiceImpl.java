@@ -1,6 +1,6 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
-import com.jayway.trumpet.server.boot.TrumpetDomainConfig;
+import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
@@ -8,6 +8,7 @@ import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerImpl;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEvent;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEventBus;
@@ -34,15 +35,17 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     private final TrumpetEventBus eventBus;
 
-    private final TrumpetDomainConfig config;
+    private final SubscriberConfig subscriberConfig;
+    private final TrumpeteerConfig trumpeteerConfig;
 
-    public TrumpetBroadcastServiceImpl(TrumpetEventBus eventBus, TrumpetDomainConfig config) {
-        this.config = config;
+    public TrumpetBroadcastServiceImpl(TrumpetEventBus eventBus, SubscriberConfig subscriberConfig, TrumpeteerConfig trumpeteerConfig) {
+        this.subscriberConfig = subscriberConfig;
+        this.trumpeteerConfig = trumpeteerConfig;
 
         TimerTask purgeTask = new TimerTask() {
             @Override
             public void run() {
-                trumpeteers.values().stream().filter(s -> s.isStale(config.trumpeteerStaleThreshold())).forEach(s -> {
+                trumpeteers.values().stream().filter(s -> s.isStale(subscriberConfig.trumpeteerStaleThreshold())).forEach(s -> {
                     logger.debug("Purging stale subscriber {}", s.id());
                     s.closeChannel();
                     trumpeteers.remove(s.id());
@@ -50,7 +53,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
             }
         };
         Timer purgeStaleTrumpeteersTimer = new Timer(true);
-        purgeStaleTrumpeteersTimer.schedule(purgeTask, 0, config.trumpeteerPurgeInterval());
+        purgeStaleTrumpeteersTimer.schedule(purgeTask, 0, subscriberConfig.trumpeteerPurgeInterval());
         this.eventBus = eventBus;
         this.eventBus.subscribe(this::handleTrumpetEvent);
     }
@@ -81,7 +84,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     @Override
     public Trumpeteer create(String id, String linkId, Location location, SubscriberOutput output) {
-        return new TrumpeteerImpl(id, linkId, location, output);
+        return new TrumpeteerImpl(id, linkId, location, output, trumpeteerConfig);
     }
 
     @Override
@@ -101,7 +104,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     @Override
     public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int maxDistance) {
-        int distance = min(maxDistance, config.trumpeteerMaxDistance());
+        int distance = min(maxDistance, trumpeteer.maxTrumpetDistance());
 
         Long inRange = trumpeteers.values().stream().filter(subscription -> !subscription.id().equals(trumpeteer.id()) && subscription.trumpeteer.inRange(trumpeteer, distance)).count();
 

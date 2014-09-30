@@ -1,9 +1,15 @@
 package com.jayway.trumpet.server.boot;
 
+import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import org.aeonbits.owner.Config;
 
 
-public interface TrumpetServerConfig extends Config {
+@Config.LoadPolicy(Config.LoadType.MERGE)
+@Config.Sources({"file:trumpet-server.config",
+        "file:~/.trumpet-server.config",
+        "file:/etc/trumpet-server.config"})
+public interface TrumpetServerConfig extends Config, TrumpeteerConfig, SubscriberConfig, GcmConfig {
 
     static final String SERVER_HTTP_PORT = "server.http.port";
     static final String SERVER_HOST_NAME = "server.host.name";

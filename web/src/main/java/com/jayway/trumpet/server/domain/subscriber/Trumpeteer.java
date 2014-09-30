@@ -27,4 +27,6 @@ public interface Trumpeteer {
     SubscriberOutput output();
 
     Location location();
+
+    int maxTrumpetDistance();
 }

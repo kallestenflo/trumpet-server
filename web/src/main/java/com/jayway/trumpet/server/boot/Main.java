@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 public class Main {
 
     public static void main(String[] args) {
-        TrumpetConfig config = ConfigFactory.create(TrumpetConfig.class,
+        TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class,
                 System.getProperties(),
                 System.getenv());
 
