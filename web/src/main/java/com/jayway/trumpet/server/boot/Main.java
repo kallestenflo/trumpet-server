@@ -1,6 +1,8 @@
 package com.jayway.trumpet.server.boot;
 
 import org.aeonbits.owner.ConfigFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -12,10 +14,15 @@ import java.nio.charset.StandardCharsets;
 
 public class Main {
 
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
+
         TrumpetServerConfig config = ConfigFactory.create(TrumpetServerConfig.class,
                 System.getProperties(),
                 System.getenv());
+
+        config.addReloadListener(events -> events.getEvents().stream().map(e -> "Reloaded property " + e.getPropertyName() + " from " + e.getOldValue() + " to " + e.getNewValue()).forEach(logger::info));
 
         if (args.length > 0) {
             if (args[0].equalsIgnoreCase("-help") || args[0].equalsIgnoreCase("-h")) {

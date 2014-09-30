@@ -2,18 +2,19 @@ package com.jayway.trumpet.server.boot;
 
 import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
-import org.aeonbits.owner.Config;
+import org.aeonbits.owner.Reloadable;
 
-import java.util.concurrent.TimeUnit;
-
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.aeonbits.owner.Config.*;
+import static org.aeonbits.owner.Config.HotReloadType.ASYNC;
+import static org.aeonbits.owner.Config.LoadType.MERGE;
 
-@HotReload(value=10, unit = TimeUnit.SECONDS, type = Config.HotReloadType.ASYNC)
-@LoadPolicy(Config.LoadType.MERGE)
+@HotReload(value=10, unit = SECONDS, type = ASYNC)
+@LoadPolicy(MERGE)
 @Sources({"file:trumpet-server.config",
         "file:~/.trumpet-server.config",
         "file:/etc/trumpet-server.config"})
-public interface TrumpetServerConfig extends Config, TrumpeteerConfig, SubscriberConfig, GcmConfig {
+public interface TrumpetServerConfig extends Reloadable, TrumpeteerConfig, SubscriberConfig, GcmConfig {
 
     static final String SERVER_HTTP_PORT = "server.http.port";
     static final String SERVER_HOST_NAME = "server.host.name";
