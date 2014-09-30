@@ -1,6 +1,5 @@
 package com.jayway.trumpet.server.domain.trumpeteer;
 
-import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import org.aeonbits.owner.Config;
 
 public interface TrumpeteerConfig extends Config {

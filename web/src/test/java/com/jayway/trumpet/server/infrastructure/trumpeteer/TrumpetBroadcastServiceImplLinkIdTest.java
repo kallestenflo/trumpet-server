@@ -1,10 +1,10 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
-import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.domain.location.Location;
+import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import org.junit.Before;
 import org.junit.Test;

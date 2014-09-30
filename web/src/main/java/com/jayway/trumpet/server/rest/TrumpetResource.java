@@ -1,7 +1,6 @@
 package com.jayway.trumpet.server.rest;
 
 
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
@@ -9,6 +8,7 @@ import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
 import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;

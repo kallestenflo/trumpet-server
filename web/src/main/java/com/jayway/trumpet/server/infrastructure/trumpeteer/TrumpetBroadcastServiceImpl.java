@@ -1,7 +1,7 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
-import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.location.Location;
+import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
