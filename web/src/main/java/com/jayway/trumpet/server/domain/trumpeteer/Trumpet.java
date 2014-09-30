@@ -2,37 +2,37 @@ package com.jayway.trumpet.server.domain.trumpeteer;
 
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 public class Trumpet {
 
     public final Trumpeteer trumpeteer;
-    public final Trumpeteer receiver;
     public final String id;
     public final long timestamp;
     public final String message;
+    public final Optional<Integer> requestedDistance;
     public final Optional<String> topic;
-    public final int distanceFromSource;
-    public final boolean sentByMe;
+    public final Map<String, String> extParameters;
 
     private Trumpet(Trumpeteer trumpeteer,
-                    Trumpeteer receiver,
                     String id,
                     long timestamp,
                     String message,
                     String topic,
-                    int distanceFromSource) {
+                    Optional<Integer> requestedDistance,
+                    Map<String, String> extParameters) {
         this.trumpeteer = trumpeteer;
-        this.receiver = receiver;
         this.id = id;
         this.timestamp = timestamp;
         this.message = message;
+        this.requestedDistance = requestedDistance;
         this.topic = Optional.ofNullable(topic);
-        this.distanceFromSource = distanceFromSource;
-        this.sentByMe = trumpeteer.id().equals(receiver.id());
+        this.extParameters = Collections.unmodifiableMap(extParameters);
     }
 
-    public static Trumpet create(Trumpeteer trumpeteer, Trumpeteer receiver, String id, String message, String topic, int distanceFromSource, long timestamp) {
-        return new Trumpet(trumpeteer, receiver, id, timestamp, message, topic, distanceFromSource);
+    public static Trumpet create(Trumpeteer trumpeteer, String id, String message, String topic, Optional<Integer> requestedDistance, long timestamp, Map<String, String> extParameters) {
+        return new Trumpet(trumpeteer, id, timestamp, message, topic, requestedDistance, extParameters);
     }
 }

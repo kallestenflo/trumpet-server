@@ -1,5 +1,6 @@
 package com.jayway.trumpet.server.infrastructure.trumpeteer;
 
+import com.jayway.trumpet.server.domain.location.DistanceUnit;
 import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Timer;
@@ -59,9 +61,36 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     }
 
     @Override
-    public void broadcast(Trumpet trumpet, Map<String, Object> trumpetPayload) {
-        eventBus.publish(new TrumpetEvent(trumpet.receiver.id(), trumpetPayload));
+    public void broadcast(Trumpet trumpet) {
+
+        int trumpetDistance = getTrumpetDistance(trumpet);
+
+        findAll()
+                .filter(t -> t.inRange(trumpet.trumpeteer, trumpetDistance))
+                .map(t -> createTrumpetEvent(t, trumpet))
+                .forEach(eventBus::publish);
     }
+
+    private int getTrumpetDistance(Trumpet trumpet) {
+        int configMaxDistance = trumpeteerConfig.trumpeteerMaxDistance();
+        int distance = trumpet.requestedDistance.orElse(configMaxDistance);
+        return min(distance, configMaxDistance);
+    }
+
+    private TrumpetEvent createTrumpetEvent(Trumpeteer trumpeteer, Trumpet trumpet) {
+        Map<String, Object> trumpetPayload = new HashMap<>();
+        trumpetPayload.put("id", trumpet.id);
+        trumpetPayload.put("timestamp", trumpet.timestamp);
+        trumpetPayload.put("message", trumpet.message);
+        trumpet.topic.ifPresent(topic -> trumpetPayload.put("topic", topic));
+        trumpetPayload.put("distanceFromSource", trumpet.trumpeteer.distanceTo(trumpeteer, DistanceUnit.METERS));
+        trumpetPayload.put("accuracy", trumpet.trumpeteer.location().accuracy);
+        trumpetPayload.put("sentByMe", trumpet.trumpeteer.id().equals(trumpeteer.id()));
+        trumpetPayload.put("ext", trumpet.extParameters);
+
+        return new TrumpetEvent(trumpeteer.id(), trumpetPayload);
+    }
+
 
     private void handleTrumpetEvent(TrumpetEvent trumpetEvent) {
         try {
@@ -84,7 +113,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     @Override
     public Trumpeteer create(String id, String linkId, Location location, SubscriberOutput output) {
-        return new TrumpeteerImpl(id, linkId, location, output, trumpeteerConfig);
+        return new TrumpeteerImpl(id, linkId, location, output);
     }
 
     @Override
@@ -103,8 +132,8 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     }
 
     @Override
-    public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int maxDistance) {
-        int distance = min(maxDistance, trumpeteer.maxTrumpetDistance());
+    public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int requestedDistance) {
+        int distance = min(requestedDistance, trumpeteerConfig.trumpeteerMaxDistance());
 
         Long inRange = trumpeteers.values().stream().filter(subscription -> !subscription.id().equals(trumpeteer.id()) && subscription.trumpeteer.inRange(trumpeteer, distance)).count();
 
@@ -116,7 +145,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
     @Override
     public void delete(String id) {
         Subscription subscription = trumpeteers.get(id);
-        if(subscription == null) {
+        if (subscription == null) {
             return;
         }
         subscription.closeChannel();

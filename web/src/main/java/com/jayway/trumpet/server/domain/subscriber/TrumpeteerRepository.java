@@ -13,7 +13,7 @@ public interface TrumpeteerRepository {
 
     Stream<Trumpeteer> findAll();
 
-    int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int distance);
+    int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int requestedDistance);
 
     void delete(String id);
 }

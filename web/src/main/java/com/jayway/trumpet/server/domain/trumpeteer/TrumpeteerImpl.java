@@ -7,9 +7,9 @@ import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -22,15 +22,12 @@ public class TrumpeteerImpl implements Trumpeteer {
     public final String linkId;
     private final SubscriberOutput output;
     public Location location;
-    private final TrumpeteerConfig config;
 
-    public TrumpeteerImpl(String id, String linkId, Location location, SubscriberOutput output, TrumpeteerConfig config) {
+    public TrumpeteerImpl(String id, String linkId, Location location, SubscriberOutput output) {
         requireNonNull(linkId, "LinkId can not be null.");
         requireNonNull(location, "Location can not be null.");
         requireNonNull(output, "SubscriberOutput can not be null.");
         requireNonNull(id, "Id can not be null.");
-        requireNonNull(config, "Config can not be null.");
-        this.config = config;
         this.id = id;
         this.location = location;
         this.output = output;
@@ -68,28 +65,24 @@ public class TrumpeteerImpl implements Trumpeteer {
         return location;
     }
 
-    @Override
-    public int maxTrumpetDistance() {
-        return config.trumpeteerMaxDistance();
-    }
 
     @Override
     public void trumpet(String trumpetId,
                         String message,
                         String topic,
-                        Optional<Integer> distanceInMeters,
-                        Stream<Trumpeteer> candidates,
+                        Map<String, String> extParameters,
+                        Optional<Integer> requestedDistance,
                         Consumer<Trumpet> trumpetBroadcaster) {
 
         requireNonNull(message, "message can not be null.");
         requireNonNull(topic, "topic can not be null.");
-        requireNonNull(distanceInMeters, "distanceInMeters can not be null.");
-        requireNonNull(candidates, "candidates can not be null.");
+        requireNonNull(requestedDistance, "distanceInMeters can not be null.");
         requireNonNull(trumpetBroadcaster, "trumpetBroadcaster can not be null.");
+        requireNonNull(extParameters, "extParameters can not be null.");
 
         logger.debug("Trumpeteer {} trumpeted message {}", id, trumpetId);
 
-        broadcast(trumpetId, message, topic, distanceInMeters, candidates, trumpetBroadcaster);
+        broadcast(trumpetId, message, topic, extParameters, requestedDistance, trumpetBroadcaster);
     }
 
     @Override
@@ -104,25 +97,22 @@ public class TrumpeteerImpl implements Trumpeteer {
         return distanceInMeters.longValue() <= maxDistance;
     }
 
-    private Double distanceTo(Trumpeteer other, DistanceUnit distanceUnit) {
+    public Double distanceTo(Trumpeteer other, DistanceUnit distanceUnit) {
         return this.location.distanceTo(other.location(), distanceUnit);
     }
 
-    private void broadcast(String trumpetId, String message, String topic, Optional<Integer> distanceInMeters, Stream<Trumpeteer> candidates, Consumer<Trumpet> trumpetBroadcaster) {
-        long timestamp = System.currentTimeMillis();
-        int distance = Math.min(distanceInMeters.orElse(200), 200);
+    private void broadcast(String trumpetId, String message, String topic, Map<String, String> extParameters, Optional<Integer> requestedDistance, Consumer<Trumpet> trumpetBroadcaster) {
+        Trumpet trumpet = createTrumpet(trumpetId, System.currentTimeMillis(), message, topic, requestedDistance, extParameters);
 
-        candidates.map(t -> createTrumpet(t, trumpetId, timestamp, message, topic))
-                .filter(t -> t.distanceFromSource <= distance)
-                .forEach(trumpetBroadcaster);
+        trumpetBroadcaster.accept(trumpet);
     }
 
 
-    private Trumpet createTrumpet(Trumpeteer receiver, String id, long timestamp, String message, String topic) {
+    private Trumpet createTrumpet(String id, long timestamp, String message, String topic, Optional<Integer> distanceInMeters, Map<String, String> extParameters) {
         if (DEFAULT_CHANNEL.equals(topic)) {
             topic = null;
         }
-        return Trumpet.create(this, receiver, id, message, topic, this.distanceTo(receiver, DistanceUnit.METERS).intValue(), timestamp);
+        return Trumpet.create(this, id, message, topic, distanceInMeters , timestamp, extParameters);
     }
 
     private void requirePositive(long i, String message) {

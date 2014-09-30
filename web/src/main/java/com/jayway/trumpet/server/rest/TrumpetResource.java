@@ -5,7 +5,6 @@ import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
-import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
@@ -41,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -88,14 +86,14 @@ public class TrumpetResource {
     @GET
     @Path("trumpeteers/{id}")
     public Response me(@PathParam("id") String id,
-                       @QueryParam("distance") Integer distance) {
+                       @QueryParam("distance") Integer requestedDistance) {
 
-        distance = Optional.ofNullable(distance).orElse(config.trumpeteerMaxDistance());
+        requestedDistance = Optional.ofNullable(requestedDistance).orElse(config.trumpeteerMaxDistance());
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id)
                 .orElseThrow(trumpeteerNotFound);
 
-        int count = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, distance);
+        int count = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, requestedDistance);
 
         HalRepresentation representation = hal();
         representation.put("trumpeteersInRange", count);
@@ -138,14 +136,9 @@ public class TrumpetResource {
 
         Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
-        Consumer<Trumpet> broadcaster = t -> {
-            HalRepresentation trumpetPayload = createTrumpetPayload(t, extParameters);
-            trumpetBroadcastService.broadcast(t, trumpetPayload);
-        };
-
         String trumpetId = UUID.randomUUID().toString();
 
-        trumpeteer.trumpet(trumpetId, message, topic, Optional.ofNullable(distance), trumpeteerRepository.findAll(), broadcaster);
+        trumpeteer.trumpet(trumpetId, message, topic, extParameters, Optional.ofNullable(distance), trumpetBroadcastService::broadcast);
 
         return Response.ok(singletonMap("trumpetId", trumpetId)).build();
     }
@@ -285,17 +278,6 @@ public class TrumpetResource {
         return trumpeteerRepository.create(trumpeteerId, registrationId, location, subscriberOutput);
     }
 
-    private HalRepresentation createTrumpetPayload(Trumpet t, Map<String, String> extParameters) {
-        HalRepresentation trumpetPayload = new HalRepresentation();
-        trumpetPayload.put("id", t.id);
-        trumpetPayload.put("timestamp", t.timestamp);
-        trumpetPayload.put("message", t.message);
-        t.topic.ifPresent(topic -> trumpetPayload.put("topic", topic));
-        trumpetPayload.put("distanceFromSource", t.distanceFromSource);
-        trumpetPayload.put("accuracy", t.trumpeteer.location().accuracy);
-        trumpetPayload.put("sentByMe", t.sentByMe);
-        trumpetPayload.put("ext", extParameters);
-        return trumpetPayload;
-    }
+
 
 }
