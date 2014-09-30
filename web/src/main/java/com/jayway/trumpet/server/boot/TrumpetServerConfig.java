@@ -4,9 +4,13 @@ import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import org.aeonbits.owner.Config;
 
+import java.util.concurrent.TimeUnit;
 
-@Config.LoadPolicy(Config.LoadType.MERGE)
-@Config.Sources({"file:trumpet-server.config",
+import static org.aeonbits.owner.Config.*;
+
+@HotReload(value=10, unit = TimeUnit.SECONDS, type = Config.HotReloadType.ASYNC)
+@LoadPolicy(Config.LoadType.MERGE)
+@Sources({"file:trumpet-server.config",
         "file:~/.trumpet-server.config",
         "file:/etc/trumpet-server.config"})
 public interface TrumpetServerConfig extends Config, TrumpeteerConfig, SubscriberConfig, GcmConfig {
