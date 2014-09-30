@@ -35,6 +35,7 @@ public class TrumpetClient {
     private String updateLocationUri;
     private String trumpetUri;
     private String selfUri;
+    private Map<String, Object> trumpeteer;
 
     private final List<TrumpetMessage> messages = new CopyOnWriteArrayList<>();
 
@@ -50,6 +51,10 @@ public class TrumpetClient {
     private TrumpetClient(String host, int port) {
         this.host = host;
         this.port = port;
+    }
+
+    public Map<String, Object> trumpeteer() {
+        return trumpeteer;
     }
 
     public boolean hasReceived(int numberOfMessages) {
@@ -77,9 +82,8 @@ public class TrumpetClient {
         form.param("type", "sse");
         form.param("latitude", Double.toString(latitude));
         form.param("longitude", Double.toString(longitude));
-        form.param("bingo", "baz");
 
-        Map trumpeteer = client.target(createTrumpeteerUri).request(MediaType.APPLICATION_JSON).post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Map.class);
+        trumpeteer = client.target(createTrumpeteerUri).request(MediaType.APPLICATION_JSON).post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Map.class);
         String subscriptionUri = read(trumpeteer, "_links.sse-subscribe.href");
         updateLocationUri = read(trumpeteer, "_links.update-location.href");
         trumpetUri = read(trumpeteer, "_links.trumpet.href");

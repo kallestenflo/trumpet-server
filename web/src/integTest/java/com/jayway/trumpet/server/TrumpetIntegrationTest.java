@@ -137,7 +137,14 @@ public class TrumpetIntegrationTest {
         TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(max_exceeded));
 
         assertThat(exception.response.getStatus()).isEqualTo(400);
+    }
 
+    @Test
+    public void trumpeteers_receive_max_message_length_when_created() {
+
+        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
+
+        assertThat(sender.trumpeteer()).containsEntry("maxMessageLength", 320);
     }
 
     public static String createString(char character, int length) {
