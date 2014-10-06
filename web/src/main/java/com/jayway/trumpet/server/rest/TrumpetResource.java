@@ -164,6 +164,7 @@ public class TrumpetResource {
         entity.put("type", type);
         entity.put("trumpeteerId", trumpeteerId);
         entity.put("maxMessageLength", config.maxMessageLength());
+        entity.put("maxDistance", config.trumpeteerMaxDistance());
 
         final Trumpeteer trumpeteer;
         switch (type) {

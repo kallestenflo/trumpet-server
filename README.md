@@ -44,6 +44,8 @@ Response: Content-type: application/json
 {
     "type": "sse",
     "trumpeteerId" : 1,
+    "maxMessageLength" : 220,
+    "maxDistance" : 200,
     "_links": {
         "sse-subscribe": { "href" : "http://localhost:9191/api/trumpeteers/1/subscription/sse" },
         "self": { "href" : "http://localhost:9191/api/trumpeteers/1" },         
