@@ -17,29 +17,13 @@ import org.hibernate.validator.constraints.NotBlank;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -109,12 +93,27 @@ public class TrumpetResource {
                                    @FormParam("longitude") @NotNull Double longitude,
                                    @FormParam("accuracy") Integer accuracy) {
 
-        accuracy = Optional.ofNullable(accuracy).orElse(config.trumpeteerMaxDistance());
+        int requestedDistance = config.trumpeteerMaxDistance();
+        accuracy = Optional.ofNullable(accuracy).orElse(requestedDistance);
 
-        trumpeteerRepository.findById(id)
-                .orElseThrow(trumpeteerNotFound)
-                .updateLocation(location(latitude, longitude, accuracy));
+        Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
 
+        int numberOfTrumpeteersInRangeBeforeUpdate = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, requestedDistance);
+
+        trumpeteer.updateLocation(location(latitude, longitude, accuracy));
+
+        if (numberOfTrumpeteersInRangeBeforeUpdate == 0) {
+            int numberOfTrumpeteersInRangeAfterUpdate = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, requestedDistance);
+            if (numberOfTrumpeteersInRangeAfterUpdate > 0) {
+                String trumpetId = UUID.randomUUID().toString();
+                int numberOfNewTrumpeteers = numberOfTrumpeteersInRangeAfterUpdate - numberOfTrumpeteersInRangeBeforeUpdate;
+
+                Map<String, String> extParameters = new HashMap<>();
+                extParameters.put("trumpeteersDiscovered", String.valueOf(numberOfNewTrumpeteers));
+
+                trumpeteer.trumpet(trumpetId, "", "*", extParameters, Optional.empty(), trumpetBroadcastService::broadcast);
+            }
+        }
         return Response.ok().build();
     }
 
@@ -128,7 +127,7 @@ public class TrumpetResource {
                             @FormParam("topic") @NotBlank @DefaultValue("*") String topic,
                             @FormParam("distance") @Min(1) Integer distance) {
 
-        if(message.length() > config.maxMessageLength()){
+        if (message.length() > config.maxMessageLength()) {
             throw createWebApplicationException(format("Message to long! Max length is %s", config.maxMessageLength()), Response.Status.BAD_REQUEST);
         }
 
@@ -278,7 +277,6 @@ public class TrumpetResource {
         };
         return trumpeteerRepository.create(trumpeteerId, registrationId, location, subscriberOutput);
     }
-
 
 
 }
