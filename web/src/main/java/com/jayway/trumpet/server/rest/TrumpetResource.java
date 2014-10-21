@@ -102,6 +102,7 @@ public class TrumpetResource {
 
         trumpeteer.updateLocation(location(latitude, longitude, accuracy));
 
+        // TODO This is domain logic and should probably be moved to the Trumpeteer?
         if (numberOfTrumpeteersInRangeBeforeUpdate == 0) {
             int numberOfTrumpeteersInRangeAfterUpdate = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, requestedDistance);
             if (numberOfTrumpeteersInRangeAfterUpdate > 0) {
