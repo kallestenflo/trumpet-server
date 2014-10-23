@@ -1,3 +1,9 @@
+Getting started
+---------------
+1. Clone the respository
+2. Run <code>./gradlew shadowJar</code> to build the server
+3. To start the server with default configuration run <code>java -jar web/build/distributions/trumpet-server-1.0.0-shadow.jar</code> 
+
 Configuration
 -------------
 When bootstrapping tha application will scan for configurations in the order described below.
