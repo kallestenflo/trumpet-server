@@ -37,11 +37,9 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     private final TrumpetEventBus eventBus;
 
-    private final SubscriberConfig subscriberConfig;
     private final TrumpeteerConfig trumpeteerConfig;
 
     public TrumpetBroadcastServiceImpl(TrumpetEventBus eventBus, SubscriberConfig subscriberConfig, TrumpeteerConfig trumpeteerConfig) {
-        this.subscriberConfig = subscriberConfig;
         this.trumpeteerConfig = trumpeteerConfig;
 
         TimerTask purgeTask = new TimerTask() {

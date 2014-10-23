@@ -1,8 +1,11 @@
 Getting started
 ---------------
 1. Clone the respository
-2. Run <code>./gradlew shadowJar</code> to build the server
-3. To start the server with default configuration run <code>java -jar web/build/distributions/trumpet-server-1.0.0-shadow.jar</code> 
+2. Run <code>./gradlew shaowJar</code> to build the server
+3. To start the server with default configuration run 
+```bash
+java -jar web/build/distributions/trumpet-server-1.0.0-shadow.jar
+```
 
 Configuration
 -------------
