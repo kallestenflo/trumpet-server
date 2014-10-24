@@ -4,4 +4,6 @@ import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 
 public interface TrumpetSubscriptionService {
     void subscribe(Trumpeteer trumpeteer);
+
+    void keepAlive(Trumpeteer trumpeteer);
 }

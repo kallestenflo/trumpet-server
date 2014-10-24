@@ -108,6 +108,15 @@ public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionSe
     }
 
     @Override
+    public void keepAlive(Trumpeteer trumpeteer) {
+        Subscription subscription = trumpeteers.get(trumpeteer.id());
+        if (subscription == null) {
+            return;
+        }
+        trumpeteers.put(trumpeteer.id(), new Subscription(subscription.trumpeteer, System.currentTimeMillis()));
+    }
+
+    @Override
     public Trumpeteer create(String id, String linkId, Location location, SubscriberOutput output) {
         return new TrumpeteerImpl(id, linkId, location, output);
     }
@@ -158,7 +167,7 @@ public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionSe
         if (subscription == null) {
             return;
         }
-        trumpeteers.put(trumpeteer.id(), new Subscription(trumpeteer, subscription.lastAccessed.get()));
+        trumpeteers.put(trumpeteer.id(), new Subscription(trumpeteer, System.currentTimeMillis()));
     }
 
     @Override

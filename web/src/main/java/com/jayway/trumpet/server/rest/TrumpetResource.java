@@ -82,6 +82,8 @@ public class TrumpetResource {
                 .orElseThrow(trumpeteerNotFound);
 
         int count = trumpeteerRepository.countTrumpeteersInRangeOf(trumpeteer, requestedDistance);
+        trumpetSubscriptionService.keepAlive(trumpeteer);
+
 
         HalRepresentation representation = hal();
         representation.put("trumpeteersInRange", count);
@@ -190,7 +192,9 @@ public class TrumpetResource {
     @Path("/trumpeteers/{id}/subscriptions/sse")
     @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response subscribeSSE(final @PathParam("id") String id) {
-        EventOutput channel = (EventOutput) trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound).output().channel().get();
+        Trumpeteer trumpeteer = trumpeteerRepository.findById(id).orElseThrow(trumpeteerNotFound);
+        EventOutput channel = (EventOutput) trumpeteer.output().channel().get();
+        trumpetSubscriptionService.keepAlive(trumpeteer);
         return Response.ok(channel).build();
     }
 
