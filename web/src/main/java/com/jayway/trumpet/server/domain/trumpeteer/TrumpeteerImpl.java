@@ -49,10 +49,9 @@ public class TrumpeteerImpl implements Trumpeteer {
     public Trumpeteer updateLocation(Location newLocation) {
         requireNonNull(location, "Location can not be null.");
 
-        this.location = newLocation;
         logger.debug("Trumpeteer {} updated location to latitude: {}, longitude: {}", id, this.location.latitude, this.location.longitude);
 
-        return this;
+        return new TrumpeteerImpl(id, linkId, newLocation, output);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.jayway.trumpet.server;
 import com.jayway.fixture.ServerRunningRule;
 import com.jayway.fixture.TrumpetClient;
 import com.jayway.fixture.TrumpetClientException;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,10 +26,13 @@ public class TrumpetIntegrationTest {
 
     private static final String MESSAGE = "Ho ho";
 
+    @Before public void
+    clear_trumpeteer_repository_before_each_test() {
+        server.trumpeteerRepository().clear();
+    }
 
     @Test
     public void a_trumpeteer_receives_messages_when_in_range() {
-
         TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
         TrumpetClient inRange1 = createClient().connect(55.584126D, 12.957406D);
         TrumpetClient inRange2 = createClient().connect(55.584126D, 12.957406D);
@@ -36,12 +40,9 @@ public class TrumpetIntegrationTest {
 
         sender.trumpet(MESSAGE);
 
-        await().until(() -> !inRange1.messages().isEmpty());
-        await().until(() -> !inRange2.messages().isEmpty());
-
-        assertThat(inRange1.messages()).extracting("message").containsExactly(MESSAGE);
-        assertThat(inRange2.messages()).extracting("message").containsExactly(MESSAGE);
-        assertThat(outOfRange1.messages().isEmpty()).isTrue();
+        await().until(() -> assertThat(inRange1.messages()).extracting("message").contains(MESSAGE).hasSize(3)); // One for trumpet and two notification messages
+        await().until(() -> assertThat(inRange2.messages()).extracting("message").contains(MESSAGE).hasSize(2)); // One for trumpet and one notification message
+        await().until(() -> assertThat(outOfRange1.messages().size()).isEqualTo(1)); // Notification message is sent to self when subscribing
     }
 
     @Test
@@ -115,7 +116,7 @@ public class TrumpetIntegrationTest {
 
         await().until(() -> !sender.messages().isEmpty());
 
-        Map<String, String> ext = sender.messages().get(0).getExt();
+        Map<String, String> ext = sender.lastMessage().getExt();
 
         assertThat(ext).containsEntry("one-key", "one-val");
     }
@@ -132,7 +133,7 @@ public class TrumpetIntegrationTest {
 
         await().until(() -> !sender.messages().isEmpty());
 
-        assertThat(sender.messages()).extracting("message").containsExactly(max_message);
+        assertThat(sender.messages()).extracting("message").contains(max_message);
 
         TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(max_exceeded));
 

@@ -6,22 +6,14 @@ import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
-import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpetBroadcastService;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
-import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerImpl;
+import com.jayway.trumpet.server.domain.trumpeteer.*;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEvent;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,9 +21,9 @@ import java.util.stream.Stream;
 
 import static java.lang.Math.min;
 
-public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, TrumpetSubscriptionService, TrumpeteerRepository {
+public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionService, TrumpeteerRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(TrumpetBroadcastServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrumpetServiceImpl.class);
 
     private final ConcurrentMap<String, Subscription> trumpeteers = new ConcurrentHashMap<>();
 
@@ -39,7 +31,7 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     private final TrumpeteerConfig trumpeteerConfig;
 
-    public TrumpetBroadcastServiceImpl(TrumpetEventBus eventBus, SubscriberConfig subscriberConfig, TrumpeteerConfig trumpeteerConfig) {
+    public TrumpetServiceImpl(TrumpetEventBus eventBus, SubscriberConfig subscriberConfig, TrumpeteerConfig trumpeteerConfig) {
         this.trumpeteerConfig = trumpeteerConfig;
 
         TimerTask purgeTask = new TimerTask() {
@@ -52,21 +44,27 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
                 });
             }
         };
-        Timer purgeStaleTrumpeteersTimer = new Timer(true);
-        purgeStaleTrumpeteersTimer.schedule(purgeTask, 0, subscriberConfig.trumpeteerPurgeInterval());
+        if (subscriberConfig.trumpeteerPurgeEnabled()) {
+            Timer purgeStaleTrumpeteersTimer = new Timer(true);
+            purgeStaleTrumpeteersTimer.schedule(purgeTask, subscriberConfig.trumpeteerPurgeInterval(), subscriberConfig.trumpeteerPurgeInterval());
+        }
         this.eventBus = eventBus;
         this.eventBus.subscribe(this::handleTrumpetEvent);
     }
 
     @Override
     public void broadcast(Trumpet trumpet) {
-
         int trumpetDistance = getTrumpetDistance(trumpet);
 
         findAll()
                 .filter(t -> t.inRange(trumpet.trumpeteer, trumpetDistance))
                 .map(t -> createTrumpetEvent(t, trumpet))
                 .forEach(eventBus::publish);
+    }
+
+    @Override
+    public void trumpetTo(Trumpeteer trumpeteer, Trumpet trumpet) {
+        eventBus.publish(createTrumpetEvent(trumpeteer, trumpet));
     }
 
     private int getTrumpetDistance(Trumpet trumpet) {
@@ -131,13 +129,17 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
 
     @Override
     public int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int requestedDistance) {
-        int distance = min(requestedDistance, trumpeteerConfig.trumpeteerMaxDistance());
-
-        Long inRange = trumpeteers.values().stream().filter(subscription -> !subscription.id().equals(trumpeteer.id()) && subscription.trumpeteer.inRange(trumpeteer, distance)).count();
+        Long inRange = findTrumpeteersInRangeOf(trumpeteer, requestedDistance).count();
 
         logger.debug("There are {} trumpeteer(s) in range of trumpeteer {}", inRange, trumpeteer.id());
 
         return inRange.intValue();
+    }
+
+    @Override
+    public Stream<Trumpeteer> findTrumpeteersInRangeOf(Trumpeteer trumpeteer, int requestedDistance) {
+        int distance = min(requestedDistance, trumpeteerConfig.trumpeteerMaxDistance());
+        return trumpeteers.values().stream().filter(subscription -> !subscription.id().equals(trumpeteer.id()) && subscription.trumpeteer.inRange(trumpeteer, distance)).map(s -> s.trumpeteer);
     }
 
     @Override
@@ -148,6 +150,20 @@ public class TrumpetBroadcastServiceImpl implements TrumpetBroadcastService, Tru
         }
         subscription.closeChannel();
         trumpeteers.remove(id);
+    }
+
+    @Override
+    public void update(Trumpeteer trumpeteer) {
+        Subscription subscription = trumpeteers.get(trumpeteer.id());
+        if (subscription == null) {
+            return;
+        }
+        trumpeteers.put(trumpeteer.id(), new Subscription(trumpeteer, subscription.lastAccessed.get()));
+    }
+
+    @Override
+    public void clear() {
+        trumpeteers.clear();
     }
 
 

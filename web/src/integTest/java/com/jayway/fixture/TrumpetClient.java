@@ -12,7 +12,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +98,10 @@ public class TrumpetClient {
 
     public List<TrumpetMessage> messages() {
         return Collections.unmodifiableList(messages);
+    }
+
+    public TrumpetMessage lastMessage() {
+        return messages.isEmpty() ? null : messages.get(messages.size() - 1);
     }
 
     public TrumpetMessage message(int index) {

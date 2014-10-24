@@ -2,7 +2,7 @@ package com.jayway.trumpet.server.boot;
 
 import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
-import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetBroadcastServiceImpl;
+import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetServiceImpl;
 import com.jayway.trumpet.server.rest.LoggingFilter;
 import com.jayway.trumpet.server.rest.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
-
 import java.io.IOException;
 import java.util.EnumSet;
 
@@ -34,7 +33,10 @@ public class TrumpetServer {
 
     private Server server;
 
+    private final TrumpetServiceImpl trumpetService;
+
     public TrumpetServer(TrumpetServerConfig config) {
+        this.trumpetService = new TrumpetServiceImpl(new GuavaTrumpetEventBus(), config, config);
         this.server = configureServer(config);
     }
 
@@ -115,12 +117,14 @@ public class TrumpetServer {
         resourceConfig.register(SseFeature.class);
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
-        TrumpetBroadcastServiceImpl trumpetBroadcastService = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), config, config);
-
         GCMBroadcaster gcmBroadcaster = new GCMBroadcaster(config);
 
-        resourceConfig.register(new TrumpetResource(config, trumpetBroadcastService, gcmBroadcaster, trumpetBroadcastService, trumpetBroadcastService));
+        resourceConfig.register(new TrumpetResource(config, trumpetService, gcmBroadcaster, trumpetService, trumpetService));
 
         return new ServletContainer(resourceConfig);
+    }
+
+    public TrumpetServiceImpl getTrumpetService() {
+        return trumpetService;
     }
 }

@@ -17,7 +17,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TrumpetBroadcastServiceImplLinkIdTest {
+public class TrumpetServiceImplLinkIdTest {
 
     @Mock
     TrumpeteerConfig trumpeteerConfig;
@@ -26,14 +26,14 @@ public class TrumpetBroadcastServiceImplLinkIdTest {
     SubscriberConfig subscriberConfig;
 
 
-    private TrumpetBroadcastServiceImpl tested;
+    private TrumpetServiceImpl tested;
 
     @Before public void
     given_trumpet_broadcast_service_is_created() {
         given(subscriberConfig.trumpeteerStaleThreshold()).willReturn(600000L);
         given(subscriberConfig.trumpeteerPurgeInterval()).willReturn(600000L);
 
-        tested = new TrumpetBroadcastServiceImpl(new GuavaTrumpetEventBus(), subscriberConfig, trumpeteerConfig);
+        tested = new TrumpetServiceImpl(new GuavaTrumpetEventBus(), subscriberConfig, trumpeteerConfig);
     }
 
     @Test public void

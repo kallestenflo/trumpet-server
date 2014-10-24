@@ -15,5 +15,11 @@ public interface TrumpeteerRepository {
 
     int countTrumpeteersInRangeOf(Trumpeteer trumpeteer, int requestedDistance);
 
+    Stream<Trumpeteer> findTrumpeteersInRangeOf(Trumpeteer trumpeteer, int requestedDistance);
+
     void delete(String id);
+
+    void update(Trumpeteer trumpeteer);
+
+    void clear();
 }
