@@ -39,6 +39,7 @@ public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionSe
             public void run() {
                 trumpeteers.values().stream().filter(s -> s.isStale(subscriberConfig.trumpeteerStaleThreshold())).forEach(s -> {
                     logger.debug("Purging stale subscriber {}", s.id());
+                    notifyRemovingSubscriber(s);
                     s.closeChannel();
                     trumpeteers.remove(s.id());
                 });
@@ -157,8 +158,26 @@ public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionSe
         if (subscription == null) {
             return;
         }
+        notifyRemovingSubscriber(subscription);
         subscription.closeChannel();
         trumpeteers.remove(id);
+    }
+
+    private void notifyRemovingSubscriber(Subscription subscription) {
+        //TODO This method have a lot in common with TrumpeteerNotificationServiceImpl
+        logger.debug("Updating trumpeteers in range for all trumpeteers in range of trumpeteer {} since it's going to be removed", subscription.id());
+        int distance = trumpeteerConfig.trumpeteerMaxDistance();
+        findTrumpeteersInRangeOf(subscription.trumpeteer, distance)
+                .map(t -> Pair.of(t, countTrumpeteersInRangeOf(t, distance)))
+                .map(p -> Pair.of(p.getKey(), p.getValue() - 1)) // Compensate for the removal of this subscriber
+                .forEach(p -> {
+                    String trumpetId = UUID.randomUUID().toString();
+                    Map<String, String> extParameters = new HashMap<>();
+                    extParameters.put("trumpeteersInRange", String.valueOf(p.getValue()));
+                    Trumpeteer t = p.getKey();
+                    Optional<Integer> maxDistance = Optional.of(distance);
+                    trumpetTo(t, Trumpet.create(t, trumpetId, "", "", maxDistance, System.currentTimeMillis(), extParameters));
+                });
     }
 
     @Override

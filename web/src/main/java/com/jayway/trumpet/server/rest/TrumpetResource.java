@@ -1,15 +1,14 @@
 package com.jayway.trumpet.server.rest;
 
 
-import com.google.common.collect.Sets;
 import com.jayway.trumpet.server.domain.location.Location;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
-import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerNotificationService;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -26,7 +25,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,20 +45,21 @@ public class TrumpetResource {
 
     private final TrumpeteerRepository trumpeteerRepository;
     private final GCMBroadcaster gcmBroadcaster;
-
     private final TrumpetService trumpetService;
     private final TrumpetSubscriptionService trumpetSubscriptionService;
+    private final TrumpeteerNotificationService trumpeteerNotificationService;
 
     public TrumpetResource(TrumpeteerConfig config,
                            TrumpeteerRepository trumpeteerRepository,
                            GCMBroadcaster gcmBroadcaster,
                            TrumpetService trumpetService,
-                           TrumpetSubscriptionService trumpetSubscriptionService) {
+                           TrumpetSubscriptionService trumpetSubscriptionService, TrumpeteerNotificationService trumpeteerNotificationService) {
         this.config = config;
         this.trumpeteerRepository = trumpeteerRepository;
         this.gcmBroadcaster = gcmBroadcaster;
         this.trumpetService = trumpetService;
         this.trumpetSubscriptionService = trumpetSubscriptionService;
+        this.trumpeteerNotificationService = trumpeteerNotificationService;
         this.trumpeteerNotFound = () -> new WebApplicationException("Trumpeteer not found!", Response.Status.NOT_FOUND);
     }
 
@@ -111,7 +110,7 @@ public class TrumpetResource {
 
         Stream<Trumpeteer> trumpeteersInRangeOfAfterUpdate = trumpeteerRepository.findTrumpeteersInRangeOf(updatedTrumpeteer, requestedDistance);
 
-        notifyTrumpeteersDiscovered(updatedTrumpeteer, trumpeteersInRangeOfBeforeUpdate, trumpeteersInRangeOfAfterUpdate, false);
+        trumpeteerNotificationService.notifyTrumpeteersInRange(updatedTrumpeteer, trumpeteersInRangeOfBeforeUpdate, trumpeteersInRangeOfAfterUpdate, false);
 
         return Response.ok().build();
     }
@@ -178,8 +177,7 @@ public class TrumpetResource {
         }
 
         trumpetSubscriptionService.subscribe(trumpeteer);
-
-        notifyTrumpeteersDiscovered(trumpeteer, Stream.empty(), trumpeteerRepository.findTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistance()), true);
+        trumpeteerNotificationService.notifyTrumpeteersInRange(trumpeteer, Stream.empty(), trumpeteerRepository.findTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistance()), true);
 
         entity.addLink("update-location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("location").build());
         entity.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("trumpets").build());
@@ -279,65 +277,5 @@ public class TrumpetResource {
             }
         };
         return trumpeteerRepository.create(trumpeteerId, registrationId, location, subscriberOutput);
-    }
-
-    // TODO Accuracy is not taken into account for trumpeteer (first argument)
-    private void notifyTrumpeteersDiscovered(Trumpeteer trumpeteer, Stream<Trumpeteer> trumpeteersInRangeOfBeforeUpdate,
-                                             Stream<Trumpeteer> trumpeteersInRangeOfAfterUpdate, boolean sendToOriginatingTrumpeteerEvenIfNoDiff) {
-        Set<Trumpeteer> diff = diff(trumpeteersInRangeOfBeforeUpdate, trumpeteersInRangeOfAfterUpdate);
-        final Stream<Trumpeteer> stream;
-        if (diff.isEmpty() && !sendToOriginatingTrumpeteerEvenIfNoDiff) {
-            stream = diff.stream();
-        } else {
-            stream = Stream.concat(Stream.of(trumpeteer), diff.stream());
-        }
-
-        stream.map(t -> Pair.of(t, trumpeteerRepository.countTrumpeteersInRangeOf(t, config.trumpeteerMaxDistance())))
-                .forEach(p -> {
-                    String trumpetId = UUID.randomUUID().toString();
-                    Map<String, String> extParameters = new HashMap<>();
-                    extParameters.put("trumpeteersInRange", String.valueOf(p.getValue()));
-                    Trumpeteer t = p.getKey();
-                    // Don't use requestedDistance since the receiving trumpeteer may have another requestedDistance than the trumpeteer that updates its location
-                    Optional<Integer> maxDistance = Optional.of(config.trumpeteerMaxDistance());
-                    trumpetService.trumpetTo(t, Trumpet.create(t, trumpetId, "", "", maxDistance, System.currentTimeMillis(), extParameters));
-                });
-    }
-
-    static class Pair<K, V> {
-
-        public final K key;
-
-
-        public final V value;
-
-
-        public Pair(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public K getKey() {
-            return key;
-        }
-
-        public V getValue() {
-            return value;
-        }
-
-        static <K, V> Pair<K, V> of(K k, V v) {
-            return new Pair<>(k, v);
-        }
-
-        void consume(BiConsumer<K, V> consumer) {
-            consumer.accept(key, value);
-        }
-    }
-
-    static <T> Set<T> diff(final Stream<T> s1, final Stream<T> s2) {
-        // TODO This is inefficient, see http://stackoverflow.com/questions/26547286/how-to-get-the-symmetric-difference-between-two-streams-in-java-8
-        Set<T> set1 = s1.collect(Collectors.toSet());
-        Set<T> set2 = s2.collect(Collectors.toSet());
-        return Sets.symmetricDifference(set1, set2);
     }
 }

@@ -1,8 +1,10 @@
 package com.jayway.trumpet.server.boot;
 
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerNotificationService;
 import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetServiceImpl;
+import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpeteerNotificationServiceImpl;
 import com.jayway.trumpet.server.rest.LoggingFilter;
 import com.jayway.trumpet.server.rest.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
@@ -118,8 +120,8 @@ public class TrumpetServer {
         resourceConfig.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
         GCMBroadcaster gcmBroadcaster = new GCMBroadcaster(config);
-
-        resourceConfig.register(new TrumpetResource(config, trumpetService, gcmBroadcaster, trumpetService, trumpetService));
+        TrumpeteerNotificationService trumpeteerNotificationService = new TrumpeteerNotificationServiceImpl(trumpetService, trumpetService, config);
+        resourceConfig.register(new TrumpetResource(config, trumpetService, gcmBroadcaster, trumpetService, trumpetService, trumpeteerNotificationService));
 
         return new ServletContainer(resourceConfig);
     }
