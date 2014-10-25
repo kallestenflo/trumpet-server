@@ -111,7 +111,7 @@ public class TrumpetResource {
 
         Stream<Trumpeteer> trumpeteersInRangeOfAfterUpdate = trumpeteerRepository.findTrumpeteersInRangeOf(updatedTrumpeteer, requestedDistance);
 
-        notifyTrumpeteersDiscovered(updatedTrumpeteer, trumpeteersInRangeOfBeforeUpdate, trumpeteersInRangeOfAfterUpdate);
+        notifyTrumpeteersDiscovered(updatedTrumpeteer, trumpeteersInRangeOfBeforeUpdate, trumpeteersInRangeOfAfterUpdate, false);
 
         return Response.ok().build();
     }
@@ -179,7 +179,7 @@ public class TrumpetResource {
 
         trumpetSubscriptionService.subscribe(trumpeteer);
 
-        notifyTrumpeteersDiscovered(trumpeteer, Stream.empty(), trumpeteerRepository.findTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistance()));
+        notifyTrumpeteersDiscovered(trumpeteer, Stream.empty(), trumpeteerRepository.findTrumpeteersInRangeOf(trumpeteer, config.trumpeteerMaxDistance()), true);
 
         entity.addLink("update-location", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("location").build());
         entity.addLink("trumpet", uriInfo.getBaseUriBuilder().path("trumpeteers").path(trumpeteerId).path("trumpets").build());
@@ -282,9 +282,17 @@ public class TrumpetResource {
     }
 
     // TODO Accuracy is not taken into account for trumpeteer (first argument)
-    private void notifyTrumpeteersDiscovered(Trumpeteer trumpeteer, Stream<Trumpeteer> trumpeteersInRangeOfBeforeUpdate, Stream<Trumpeteer> trumpeteersInRangeOfAfterUpdate) {
-        Stream.concat(Stream.of(trumpeteer), diff(trumpeteersInRangeOfBeforeUpdate, trumpeteersInRangeOfAfterUpdate))
-                .map(t -> Pair.of(t, trumpeteerRepository.countTrumpeteersInRangeOf(t, config.trumpeteerMaxDistance())))
+    private void notifyTrumpeteersDiscovered(Trumpeteer trumpeteer, Stream<Trumpeteer> trumpeteersInRangeOfBeforeUpdate,
+                                             Stream<Trumpeteer> trumpeteersInRangeOfAfterUpdate, boolean sendToOriginatingTrumpeteerEvenIfNoDiff) {
+        Set<Trumpeteer> diff = diff(trumpeteersInRangeOfBeforeUpdate, trumpeteersInRangeOfAfterUpdate);
+        final Stream<Trumpeteer> stream;
+        if (diff.isEmpty() && !sendToOriginatingTrumpeteerEvenIfNoDiff) {
+            stream = diff.stream();
+        } else {
+            stream = Stream.concat(Stream.of(trumpeteer), diff.stream());
+        }
+
+        stream.map(t -> Pair.of(t, trumpeteerRepository.countTrumpeteersInRangeOf(t, config.trumpeteerMaxDistance())))
                 .forEach(p -> {
                     String trumpetId = UUID.randomUUID().toString();
                     Map<String, String> extParameters = new HashMap<>();
@@ -326,10 +334,10 @@ public class TrumpetResource {
         }
     }
 
-    static <T> Stream<T> diff(final Stream<T> s1, final Stream<T> s2) {
+    static <T> Set<T> diff(final Stream<T> s1, final Stream<T> s2) {
         // TODO This is inefficient, see http://stackoverflow.com/questions/26547286/how-to-get-the-symmetric-difference-between-two-streams-in-java-8
         Set<T> set1 = s1.collect(Collectors.toSet());
         Set<T> set2 = s2.collect(Collectors.toSet());
-        return Sets.symmetricDifference(set1, set2).stream();
+        return Sets.symmetricDifference(set1, set2);
     }
 }

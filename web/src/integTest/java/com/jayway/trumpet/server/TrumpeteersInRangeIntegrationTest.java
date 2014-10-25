@@ -10,7 +10,9 @@ import org.junit.Test;
 import java.util.List;
 
 import static com.jayway.awaitility.Awaitility.await;
+import static com.jayway.awaitility.Awaitility.with;
 import static com.jayway.fixture.ServerRunningRule.local;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TrumpeteersInRangeIntegrationTest {
@@ -62,6 +64,38 @@ public class TrumpeteersInRangeIntegrationTest {
         await().until(() -> assertThat(trumpeteersDiscoveredInLastMessageTo(inRange1)).isEqualTo(3));
         await().until(() -> assertThat(trumpeteersDiscoveredInLastMessageTo(inRange2)).isEqualTo(3));
         await().until(() -> assertThat(trumpeteersDiscoveredInLastMessageTo(inRange3)).isEqualTo(3));
+    }
+
+    @Test
+    public void no_notifications_are_sent_to_any_trumpeteer_on_update_location_when_no_new_trumpeteers_are_found() {
+        // Given
+        TrumpetClient inRange1 = createClient().connect(55.584126D, 12.957406D);
+        TrumpetClient inRange2 = createClient().connect(55.584125D, 12.957405D);
+        TrumpetClient inRange3 = createClient().connect(55.584127D, 12.957407D);
+        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
+
+        await().until(() -> assertThat(sender.messages()).hasSize(1));
+        await().until(() -> assertThat(inRange1.messages()).hasSize(4));
+        await().until(() -> assertThat(inRange2.messages()).hasSize(3));
+        await().until(() -> assertThat(inRange3.messages()).hasSize(2));
+
+        // When
+        sender.updateLocation(55.583986D, 12.957579D); // Update to a location that is
+
+        // Then
+        with().pollDelay(500, MILLISECONDS). await().until(() -> assertThat(sender.messages()).hasSize(1)); // We wait 500 ms and make sure that no notification has been sent during this interval
+        await().until(() -> assertThat(inRange1.messages()).hasSize(4));
+        await().until(() -> assertThat(inRange2.messages()).hasSize(3));
+        await().until(() -> assertThat(inRange3.messages()).hasSize(2));
+    }
+
+    @Test
+    public void notification_is_sent_to_trumpeteer_when_subscribing_even_if_no_other_trumpeteers_are_around() {
+        // When
+        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
+
+        // Then
+        await().until(() -> assertThat(trumpeteersDiscoveredInLastMessageTo(sender)).isEqualTo(0));
     }
 
     private int trumpeteersDiscoveredInLastMessageTo(TrumpetClient client) {
