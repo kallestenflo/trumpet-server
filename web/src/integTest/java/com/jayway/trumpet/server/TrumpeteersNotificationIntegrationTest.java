@@ -15,7 +15,7 @@ import static com.jayway.fixture.ServerRunningRule.local;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TrumpeteersInRangeIntegrationTest {
+public class TrumpeteersNotificationIntegrationTest {
 
     @ClassRule
     public static ServerRunningRule server = local();
@@ -96,6 +96,15 @@ public class TrumpeteersInRangeIntegrationTest {
 
         // Then
         await().until(() -> assertThat(trumpeteersDiscoveredInLastMessageTo(sender)).isEqualTo(0));
+    }
+
+    @Test
+    public void notifications_is_sent_on_empty_channel() {
+        // When
+        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
+
+        // Then
+        await().until(() -> assertThat(sender.messages()).extracting("channel").containsNull().hasSize(1));
     }
 
     private int trumpeteersDiscoveredInLastMessageTo(TrumpetClient client) {

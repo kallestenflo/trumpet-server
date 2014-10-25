@@ -19,6 +19,10 @@ public class TrumpetMessage {
         return (String) payload.get("message");
     }
 
+    public String getChannel(){
+        return (String) payload.get("channel");
+    }
+
     public String getId(){
         return (String) payload.get("id");
     }

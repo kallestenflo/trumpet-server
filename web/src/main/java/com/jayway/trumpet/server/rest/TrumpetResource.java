@@ -300,7 +300,7 @@ public class TrumpetResource {
                     Trumpeteer t = p.getKey();
                     // Don't use requestedDistance since the receiving trumpeteer may have another requestedDistance than the trumpeteer that updates its location
                     Optional<Integer> maxDistance = Optional.of(config.trumpeteerMaxDistance());
-                    trumpetService.trumpetTo(t, Trumpet.create(t, trumpetId, "", "*", maxDistance, System.currentTimeMillis(), extParameters));
+                    trumpetService.trumpetTo(t, Trumpet.create(t, trumpetId, "", "", maxDistance, System.currentTimeMillis(), extParameters));
                 });
     }
 
