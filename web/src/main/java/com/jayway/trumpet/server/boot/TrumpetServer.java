@@ -5,6 +5,7 @@ import com.jayway.trumpet.server.infrastructure.event.GuavaTrumpetEventBus;
 import com.jayway.trumpet.server.infrastructure.subscription.gcm.GCMBroadcaster;
 import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpetServiceImpl;
 import com.jayway.trumpet.server.infrastructure.trumpeteer.TrumpeteerNotificationServiceImpl;
+import com.jayway.trumpet.server.rest.ForceClientUpgradeFilter;
 import com.jayway.trumpet.server.rest.LoggingFilter;
 import com.jayway.trumpet.server.rest.TrumpetResource;
 import org.eclipse.jetty.server.Connector;
@@ -81,8 +82,8 @@ public class TrumpetServer {
             servletHolder.setInitOrder(1);
             context.addServlet(servletHolder, "/*");
 
-            FilterHolder filterHolder = new FilterHolder(new LoggingFilter(true, LoggerFactory.getLogger("API")));
-            context.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
+            context.addFilter(new FilterHolder(new LoggingFilter(true, LoggerFactory.getLogger("API"))), "/*", EnumSet.of(DispatcherType.REQUEST));
+            context.addFilter(new FilterHolder(new ForceClientUpgradeFilter(config)), "/*", EnumSet.of(DispatcherType.REQUEST));
             //context.addFilter(LoggingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 
             WebAppContext webAppContext = new WebAppContext();

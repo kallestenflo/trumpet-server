@@ -5,6 +5,7 @@ import com.jayway.trumpet.server.boot.TrumpetServerConfig;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
 import org.aeonbits.owner.ConfigFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -28,6 +29,16 @@ public class ServerRunningRule implements TestRule {
         Properties props = new Properties();
         props.setProperty(TrumpetServerConfig.SERVER_HTTP_PORT, String.valueOf(port));
 
+        return local(props);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static ServerRunningRule local(Pair<String, String> property, Pair<String, String>... properties) {
+        Properties props = new Properties();
+        props.put(property.getKey(), property.getValue());
+        for (Pair<String, String> pair : properties) {
+            props.put(pair.getKey(), pair.getValue());
+        }
         return local(props);
     }
 

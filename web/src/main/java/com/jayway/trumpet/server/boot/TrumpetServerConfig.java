@@ -14,7 +14,7 @@ import static org.aeonbits.owner.Config.LoadType.MERGE;
 @Sources({"file:trumpet-server.config",
         "file:~/.trumpet-server.config",
         "file:/etc/trumpet-server.config"})
-public interface TrumpetServerConfig extends Reloadable, TrumpeteerConfig, SubscriberConfig, GcmConfig {
+public interface TrumpetServerConfig extends Reloadable, TrumpeteerConfig, SubscriberConfig, GcmConfig, ForceClientUpgradeConfig {
 
     static final String SERVER_HTTP_PORT = "server.http.port";
     static final String SERVER_HOST_NAME = "server.host.name";
