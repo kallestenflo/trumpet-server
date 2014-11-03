@@ -86,6 +86,20 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     }
 
     @Test public void
+    returns_json_error_when_version_is_lower_than_min_version_and_client_type_is_undefined() {
+        // Given
+        given().
+                header("X-CLIENT-NAME", "com.jayway.elefant").
+                header("X-CLIENT-VERSION", "0.4.2").
+        when().
+                get().
+        then().
+                statusCode(400).
+                body("minRequiredVersion", equalTo("1.2.7")).
+                body("upgradeRequired", is(true));
+    }
+
+    @Test public void
     returns_json_error_when_version_is_malformed_and_starts_with_number_and_min_is_required() {
         // Given
         given().
