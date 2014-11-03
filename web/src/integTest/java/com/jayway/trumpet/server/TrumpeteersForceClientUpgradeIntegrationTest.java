@@ -47,7 +47,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         given().
                 header("X-CLIENT-NAME", "com.jayway.elefant").
                 header("X-CLIENT-VERSION", "1.2.4").
-                header("X-CLIENT-TYPE", "android").
+                header("X-CLIENT-PLATFORM", "android").
         when().
                 get().
         then().
@@ -61,7 +61,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         // Given
         given().
                 header("X-CLIENT-NAME", "com.jayway.elefant").
-                header("X-CLIENT-TYPE", "android").
+                header("X-CLIENT-PLATFORM", "android").
         when().
                 get().
         then().
@@ -76,7 +76,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         given().
                 header("X-CLIENT-NAME", "com.jayway.elefant").
                 header("X-CLIENT-VERSION", "test-00203-joms").
-                header("X-CLIENT-TYPE", "android").
+                header("X-CLIENT-PLATFORM", "android").
         when().
                 get().
         then().
@@ -86,7 +86,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     }
 
     @Test public void
-    returns_json_error_when_version_is_lower_than_min_version_and_client_type_is_undefined() {
+    returns_json_error_when_version_is_lower_than_min_version_and_client_platform_is_undefined() {
         // Given
         given().
                 header("X-CLIENT-NAME", "com.jayway.elefant").
@@ -105,7 +105,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         given().
                 header("X-CLIENT-NAME", "com.jayway.elefant").
                 header("X-CLIENT-VERSION", "2134").
-                header("X-CLIENT-TYPE", "android").
+                header("X-CLIENT-PLATFORM", "android").
         when().
                 get().
         then().
@@ -120,7 +120,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         given().
                 header("X-CLIENT-NAME", "com.jayway.elefant").
                 header("X-CLIENT-VERSION", "1.2.9").
-                header("X-CLIENT-TYPE", "android").
+                header("X-CLIENT-PLATFORM", "android").
         when().
                 get().
         then().
@@ -133,7 +133,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         given().
                 header("X-CLIENT-NAME", "com.jayway.elefant").
                 header("X-CLIENT-VERSION", "1.2.7").
-                header("X-CLIENT-TYPE", "android").
+                header("X-CLIENT-PLATFORM", "android").
         when().
                 get().
         then().

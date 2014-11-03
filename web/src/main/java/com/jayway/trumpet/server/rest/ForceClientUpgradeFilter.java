@@ -22,7 +22,7 @@ public class ForceClientUpgradeFilter implements Filter {
 
     private static final Logger log = LoggerFactory.getLogger(ForceClientUpgradeFilter.class);
 
-    private static final String CLIENT_TYPE = "X-CLIENT-TYPE";
+    private static final String CLIENT_TYPE = "X-CLIENT-PLATFORM";
     private static final String CLIENT_VERSION = "X-CLIENT-VERSION";
     private static final String ERROR_CONTENT_TYPE = "application/json";
     private static final String ERROR_CONTENT_ENCODING = "UTF-8";
