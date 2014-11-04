@@ -2,15 +2,11 @@ package com.jayway.trumpet.server;
 
 import com.jayway.fixture.ServerRunningRule;
 import com.jayway.restassured.RestAssured;
-import com.jayway.trumpet.server.boot.ForceClientUpgradeConfig;
 import org.apache.commons.lang3.tuple.Pair;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import java.util.Properties;
 
 import static com.jayway.fixture.ServerRunningRule.local;
 import static com.jayway.restassured.RestAssured.given;
