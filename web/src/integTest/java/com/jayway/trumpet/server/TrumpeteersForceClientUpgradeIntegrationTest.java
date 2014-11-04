@@ -47,7 +47,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         when().
                 get().
         then().
-                statusCode(400).
+                statusCode(403).
                 body("minRequiredVersion", equalTo("1.2.7")).
                 body("upgradeRequired", is(true));
     }
@@ -61,7 +61,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         when().
                 get().
         then().
-                statusCode(400).
+                statusCode(403).
                 body("minRequiredVersion", equalTo("1.2.7")).
                 body("upgradeRequired", is(true));
     }
@@ -76,7 +76,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         when().
                 get().
         then().
-                statusCode(400).
+                statusCode(403).
                 body("minRequiredVersion", equalTo("1.2.7")).
                 body("upgradeRequired", is(true));
     }
@@ -90,7 +90,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         when().
                 get().
         then().
-                statusCode(400).
+                statusCode(403).
                 body("minRequiredVersion", equalTo("1.2.7")).
                 body("upgradeRequired", is(true));
     }
@@ -105,7 +105,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
         when().
                 get().
         then().
-                statusCode(400).
+                statusCode(403).
                 body("minRequiredVersion", equalTo("1.2.7")).
                 body("upgradeRequired", is(true));
     }

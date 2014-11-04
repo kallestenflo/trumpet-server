@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static java.lang.String.format;
+import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 
 /**
  * Servlet filter that checks that the clients supplies a valid Api-Key header.
@@ -26,7 +27,6 @@ public class ForceClientUpgradeFilter implements Filter {
     private static final String CLIENT_VERSION = "X-APP-VERSION";
     private static final String ERROR_CONTENT_TYPE = "application/json";
     private static final String ERROR_CONTENT_ENCODING = "UTF-8";
-    private static final int BAD_REQUEST = 400;
     private static final String ANDROID = "android";
     private static final String DEFAULT_VERSION = "0.0.0";
 
@@ -58,7 +58,7 @@ public class ForceClientUpgradeFilter implements Filter {
             }
 
             if (clientMinVersion.compareTo(minRequiredVersion) < 0) {
-                ((HttpServletResponse) servletResponse).setStatus(BAD_REQUEST);
+                ((HttpServletResponse) servletResponse).setStatus(SC_FORBIDDEN);
                 servletResponse.setContentType(ERROR_CONTENT_TYPE);
                 servletResponse.setCharacterEncoding(ERROR_CONTENT_ENCODING);
                 servletResponse.getOutputStream().print(format("{ \"minRequiredVersion\" : \"%s\", \"upgradeRequired\" : true }", minRequiredVersion.toString()));
