@@ -41,7 +41,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     returns_json_error_when_version_is_lower_than_min_required() {
         // Given
         given().
-                header("X-APP-NAME", "com.jayway.elefant").
+                header("X-APP-ID", "com.jayway.elefant").
                 header("X-APP-VERSION", "1.2.4").
                 header("X-APP-PLATFORM", "android").
         when().
@@ -56,7 +56,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     returns_json_error_when_version_is_undefined_and_min_is_required() {
         // Given
         given().
-                header("X-APP-NAME", "com.jayway.elefant").
+                header("X-APP-ID", "com.jayway.elefant").
                 header("X-APP-PLATFORM", "android").
         when().
                 get().
@@ -70,7 +70,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     returns_json_error_when_version_is_malformed_and_min_is_required() {
         // Given
         given().
-                header("X-APP-NAME", "com.jayway.elefant").
+                header("X-APP-ID", "com.jayway.elefant").
                 header("X-APP-VERSION", "test-00203-joms").
                 header("X-APP-PLATFORM", "android").
         when().
@@ -85,7 +85,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     returns_json_error_when_version_is_lower_than_min_version_and_app_platform_is_undefined() {
         // Given
         given().
-                header("X-APP-NAME", "com.jayway.elefant").
+                header("X-APP-ID", "com.jayway.elefant").
                 header("X-APP-VERSION", "0.4.2").
         when().
                 get().
@@ -99,7 +99,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     returns_json_error_when_version_is_malformed_and_starts_with_number_and_min_is_required() {
         // Given
         given().
-                header("X-APP-NAME", "com.jayway.elefant").
+                header("X-APP-ID", "com.jayway.elefant").
                 header("X-APP-VERSION", "2134").
                 header("X-APP-PLATFORM", "android").
         when().
@@ -114,7 +114,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     returns_ok_when_version_is_greater_than_min_required() {
         // Given
         given().
-                header("X-APP-NAME", "com.jayway.elefant").
+                header("X-APP-ID", "com.jayway.elefant").
                 header("X-APP-VERSION", "1.2.9").
                 header("X-APP-PLATFORM", "android").
         when().
@@ -127,7 +127,7 @@ public class TrumpeteersForceClientUpgradeIntegrationTest {
     returns_ok_when_version_is_equal_to_min_required() {
         // Given
         given().
-                header("X-APP-NAME", "com.jayway.elefant").
+                header("X-APP-ID", "com.jayway.elefant").
                 header("X-APP-VERSION", "1.2.7").
                 header("X-APP-PLATFORM", "android").
         when().
