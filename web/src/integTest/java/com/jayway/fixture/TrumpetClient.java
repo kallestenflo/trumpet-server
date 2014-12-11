@@ -12,6 +12,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,8 @@ public class TrumpetClient {
     private String selfUri;
     private Map<String, Object> trumpeteer;
 
-    private final List<TrumpetMessage> messages = new CopyOnWriteArrayList<>();
+    private final List<TrumpetMessage> trumpetMessages = new CopyOnWriteArrayList<>();
+    private final List<InRangeMessage> inRangeMessages = new CopyOnWriteArrayList<>();
 
 
     public static TrumpetClient create(int port) {
@@ -57,7 +59,7 @@ public class TrumpetClient {
     }
 
     public boolean hasReceived(int numberOfMessages) {
-        return messages.size() == numberOfMessages;
+        return trumpetMessages.size() == numberOfMessages;
     }
 
     public void diconnect() {
@@ -89,23 +91,36 @@ public class TrumpetClient {
         selfUri = read(trumpeteer, "_links.self.href");
 
         eventSource = EventSource.target(client.target(subscriptionUri)).usePersistentConnections().build();
-        EventListener listener = inboundEvent -> messages.add(new TrumpetMessage(inboundEvent.readData(Map.class)));
+        EventListener listener = (e) -> {
+            Map<String, Object> payload = e.readData(Map.class);
+            if("trumpet".equals(payload.get("messageType"))){
+                trumpetMessages.add(new TrumpetMessage(e.readData(Map.class)));
+            }
+            else if("trumpeteersInRange".equals(payload.get("messageType"))){
+                inRangeMessages.add(new InRangeMessage(e.readData(Map.class)));
+            }
+
+        };
         eventSource.register(listener, "trumpet");
         eventSource.open();
 
         return this;
     }
 
-    public List<TrumpetMessage> messages() {
-        return Collections.unmodifiableList(messages);
+    public List<TrumpetMessage> trumpetMessages() {
+        return Collections.unmodifiableList(trumpetMessages);
+    }
+
+    public List<InRangeMessage> inRangeMessages() {
+        return Collections.unmodifiableList(inRangeMessages);
     }
 
     public TrumpetMessage lastMessage() {
-        return messages.isEmpty() ? null : messages.get(messages.size() - 1);
+        return trumpetMessages.isEmpty() ? null : trumpetMessages.get(trumpetMessages.size() - 1);
     }
 
     public TrumpetMessage message(int index) {
-        return messages.get(index);
+        return trumpetMessages.get(index);
     }
 
     public int countTrumpeteersInRange() {

@@ -1,8 +1,8 @@
 package com.jayway.trumpet.server;
 
+import com.jayway.fixture.InRangeMessage;
 import com.jayway.fixture.ServerRunningRule;
 import com.jayway.fixture.TrumpetClient;
-import com.jayway.fixture.TrumpetMessage;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -74,19 +74,19 @@ public class TrumpeteersNotificationIntegrationTest {
         TrumpetClient inRange3 = createClient().connect(55.584127D, 12.957407D);
         TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
 
-        await().until(() -> assertThat(sender.messages()).hasSize(1));
-        await().until(() -> assertThat(inRange1.messages()).hasSize(4));
-        await().until(() -> assertThat(inRange2.messages()).hasSize(3));
-        await().until(() -> assertThat(inRange3.messages()).hasSize(2));
+        await().until(() -> assertThat(sender.inRangeMessages()).hasSize(1));
+        await().until(() -> assertThat(inRange1.inRangeMessages()).hasSize(4));
+        await().until(() -> assertThat(inRange2.inRangeMessages()).hasSize(3));
+        await().until(() -> assertThat(inRange3.inRangeMessages()).hasSize(2));
 
         // When
         sender.updateLocation(55.583986D, 12.957579D); // Update to a location that is
 
         // Then
-        with().pollDelay(500, MILLISECONDS). await().until(() -> assertThat(sender.messages()).hasSize(1)); // We wait 500 ms and make sure that no notification has been sent during this interval
-        await().until(() -> assertThat(inRange1.messages()).hasSize(4));
-        await().until(() -> assertThat(inRange2.messages()).hasSize(3));
-        await().until(() -> assertThat(inRange3.messages()).hasSize(2));
+        with().pollDelay(500, MILLISECONDS). await().until(() -> assertThat(sender.inRangeMessages()).hasSize(1)); // We wait 500 ms and make sure that no notification has been sent during this interval
+        await().until(() -> assertThat(inRange1.inRangeMessages()).hasSize(4));
+        await().until(() -> assertThat(inRange2.inRangeMessages()).hasSize(3));
+        await().until(() -> assertThat(inRange3.inRangeMessages()).hasSize(2));
     }
 
     @Test
@@ -98,17 +98,8 @@ public class TrumpeteersNotificationIntegrationTest {
         await().until(() -> assertThat(trumpeteersDiscoveredInLastMessageTo(sender)).isEqualTo(0));
     }
 
-    @Test
-    public void notifications_is_sent_on_empty_channel() {
-        // When
-        TrumpetClient sender = createClient().connect(55.583985D, 12.957578D);
-
-        // Then
-        await().until(() -> assertThat(sender.messages()).extracting("channel").containsNull().hasSize(1));
-    }
-
     private int trumpeteersDiscoveredInLastMessageTo(TrumpetClient client) {
-        List<TrumpetMessage> messages = client.messages();
+        List<InRangeMessage> messages = client.inRangeMessages();
         if (messages.isEmpty()) {
             return -1;
         }

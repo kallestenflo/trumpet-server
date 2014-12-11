@@ -37,12 +37,6 @@ public class TrumpetMessage {
         //return ext != null ? (Map<String, String>) payload.get("ext") : Collections.emptyMap();
     }
 
-    public int getTrumpeteersInRange(){
-        return JsonPath.read(payload, "message.trumpeteersInRange");
-        //return (String) payload.get("id");
-    }
-
-
     public URI echoUri(){
         return URI.create(read(payload, "message._links.echo.href"));
     }

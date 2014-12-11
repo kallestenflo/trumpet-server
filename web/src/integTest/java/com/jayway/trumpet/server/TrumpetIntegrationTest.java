@@ -40,9 +40,13 @@ public class TrumpetIntegrationTest {
 
         sender.trumpet(MESSAGE);
 
-        await().until(() -> assertThat(inRange1.messages()).extracting("message").contains(MESSAGE).hasSize(3)); // One for trumpet and two notification messages
-        await().until(() -> assertThat(inRange2.messages()).extracting("message").contains(MESSAGE).hasSize(2)); // One for trumpet and one notification message
-        await().until(() -> assertThat(outOfRange1.messages().size()).isEqualTo(1)); // Notification message is sent to self when subscribing
+        await().until(() -> assertThat(inRange1.trumpetMessages()).extracting("message").contains(MESSAGE).hasSize(1)); // One trumpet
+        await().until(() -> assertThat(inRange1.inRangeMessages()).extracting("trumpeteersInRange").contains(2).hasSize(2)); //two notification trumpetMessages
+
+        await().until(() -> assertThat(inRange2.trumpetMessages()).extracting("message").contains(MESSAGE).hasSize(1)); // One trumpet and one notification message
+        await().until(() -> assertThat(inRange2.inRangeMessages()).extracting("trumpeteersInRange").contains(2).hasSize(1)); // One notification message
+
+        //await().until(() -> assertThat(outOfRange1.trumpetMessages().size()).isEqualTo(1)); // Notification message is sent to self when subscribing
     }
 
     @Test
@@ -114,7 +118,7 @@ public class TrumpetIntegrationTest {
 
         sender.trumpet("WITH EXT", Collections.singletonMap("ext.one-key", "one-val"));
 
-        await().until(() -> !sender.messages().isEmpty());
+        await().until(() -> !sender.trumpetMessages().isEmpty());
 
         Map<String, String> ext = sender.lastMessage().getExt();
 
@@ -131,9 +135,9 @@ public class TrumpetIntegrationTest {
 
         sender.trumpet(max_message);
 
-        await().until(() -> !sender.messages().isEmpty());
+        await().until(() -> !sender.trumpetMessages().isEmpty());
 
-        assertThat(sender.messages()).extracting("message").contains(max_message);
+        assertThat(sender.trumpetMessages()).extracting("message").contains(max_message);
 
         TrumpetClientException exception = expect(TrumpetClientException.class).when(() -> sender.trumpet(max_exceeded));
 
