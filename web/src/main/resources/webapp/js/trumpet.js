@@ -19,6 +19,11 @@ $(function () {
                         window.eventSource = new EventSource(subscriptionUrl);
                         window.eventSource.addEventListener('trumpet', function (event) {
                             var json = JSON.parse(event.data);
+                            if(json.messageType !== 'trumpet'){
+                                return;
+                            }
+                            json = json.message;
+
                             var message = "";
                             if (json.topic !== undefined) {
                                 message += "[" + json.topic + "] ";
