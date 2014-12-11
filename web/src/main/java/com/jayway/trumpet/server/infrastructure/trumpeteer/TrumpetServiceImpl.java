@@ -6,14 +6,25 @@ import com.jayway.trumpet.server.domain.subscriber.SubscriberConfig;
 import com.jayway.trumpet.server.domain.subscriber.SubscriberOutput;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
-import com.jayway.trumpet.server.domain.trumpeteer.*;
+import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpetService;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpetSubscriptionService;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
+import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerImpl;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEvent;
 import com.jayway.trumpet.server.infrastructure.event.TrumpetEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -62,9 +73,16 @@ public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionSe
                 .forEach(eventBus::publish);
     }
 
+
+
     @Override
     public void trumpetTo(Trumpeteer trumpeteer, Trumpet trumpet) {
         eventBus.publish(createTrumpetEvent(trumpeteer, trumpet));
+    }
+
+    @Override
+    public void notifyInRangeTo(Trumpeteer trumpeteer, int inRange) {
+        eventBus.publish(createInrangeEvent(trumpeteer, inRange));
     }
 
     private int getTrumpetDistance(Trumpet trumpet) {
@@ -73,7 +91,22 @@ public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionSe
         return min(distance, configMaxDistance);
     }
 
+
+    private TrumpetEvent createInrangeEvent(Trumpeteer trumpeteer, int trumpeteersInRange) {
+
+        Map<String, Object> trumpetPayload = new HashMap<>();
+        trumpetPayload.put("trumpeteersInRange", trumpeteersInRange);
+
+        Map<String, Object> envelope = new HashMap<>();
+        envelope.put("messageType", "trumpeteersInRange");
+        envelope.put("message", trumpetPayload);
+
+        return new TrumpetEvent(trumpeteer.id(), envelope);
+    }
+
     private TrumpetEvent createTrumpetEvent(Trumpeteer trumpeteer, Trumpet trumpet) {
+
+
         Map<String, Object> trumpetPayload = new HashMap<>();
         trumpetPayload.put("id", trumpet.id);
         trumpetPayload.put("timestamp", trumpet.timestamp);
@@ -84,7 +117,12 @@ public class TrumpetServiceImpl implements TrumpetService, TrumpetSubscriptionSe
         trumpetPayload.put("sentByMe", trumpet.trumpeteer.id().equals(trumpeteer.id()));
         trumpetPayload.put("ext", trumpet.extParameters);
 
-        return new TrumpetEvent(trumpeteer.id(), trumpetPayload);
+        Map<String, Object> envelope = new HashMap<>();
+        envelope.put("messageType", "trumpet");
+        envelope.put("message", trumpetPayload);
+
+
+        return new TrumpetEvent(trumpeteer.id(), envelope);
     }
 
 

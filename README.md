@@ -106,12 +106,25 @@ SUBSCRIPTION (SSE)
 3. Message format is:
 ```javascript
 {
-   "id": "1", 
-   "timestamp": 121212122, 
-   "message": "foo", 
-   "topic": "bar", 
-   "distanceFromSource": 240,
-   "accuracy": 10,
-   "sentByMe": false
-}
+     "messageType" : "trumpet",
+     "message" : {
+        "id": "1", 
+        "timestamp": 121212122, 
+        "message": "foo", 
+        "topic": "bar", 
+        "distanceFromSource": 240,
+        "accuracy": 10,
+        "sentByMe": false
+     }
+ }
+```
+
+Notification of trumpeters in range is triggered when other trumpeteers update their location: 
+```javascript
+{
+     "messageType" : "trumpeteersInRange",
+     "message" : {
+        "trumpeteersInRange": "1"
+     }
+ }
 ```

@@ -112,7 +112,7 @@ public class TrumpeteersNotificationIntegrationTest {
         if (messages.isEmpty()) {
             return -1;
         }
-        return Integer.parseInt(messages.get(messages.size() - 1).getExt().get("trumpeteersInRange"));
+        return messages.get(messages.size() - 1).getTrumpeteersInRange();
     }
 
 

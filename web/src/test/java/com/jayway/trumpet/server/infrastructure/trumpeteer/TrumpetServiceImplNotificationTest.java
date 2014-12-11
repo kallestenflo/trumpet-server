@@ -66,7 +66,7 @@ public class TrumpetServiceImplNotificationTest {
         // Then
         verify(guavaTrumpetEventBus, atLeastOnce()).publish(trumpetEvent.capture());
         assertThat(tested.numberOfSubscribers()).isEqualTo(2);
-        List<Object> numberOfTrumpeteersInRangeForEachTrumpeteer = trumpetEvent.getAllValues().stream().map(e -> e.payload.get("ext")).map(ext -> JsonPath.read(ext, "$.trumpeteersInRange")).collect(Collectors.toList());
+        List<Object> numberOfTrumpeteersInRangeForEachTrumpeteer = trumpetEvent.getAllValues().stream().map(e -> JsonPath.read(e.payload, "$.message.ext.trumpeteersInRange")).collect(Collectors.toList());
         assertThat(numberOfTrumpeteersInRangeForEachTrumpeteer).containsOnly("1").hasSize(2);
     }
 }

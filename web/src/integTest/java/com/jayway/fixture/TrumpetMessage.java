@@ -1,7 +1,8 @@
 package com.jayway.fixture;
 
+import com.jayway.jsonpath.JsonPath;
+
 import java.net.URI;
-import java.util.Collections;
 import java.util.Map;
 
 import static com.jayway.jsonpath.JsonPath.read;
@@ -16,24 +17,33 @@ public class TrumpetMessage {
     }
 
     public String getMessage(){
-        return (String) payload.get("message");
+        return JsonPath.read(payload, "message.message");
+        //return (String) payload.get("message");
     }
 
     public String getChannel(){
-        return (String) payload.get("channel");
+        return JsonPath.read(payload, "message.channel");
+        //return (String) payload.get("channel");
     }
 
     public String getId(){
-        return (String) payload.get("id");
+        return JsonPath.read(payload, "message.id");
+        //return (String) payload.get("id");
     }
 
     public Map<String, String> getExt(){
-        Object ext = payload.get("ext");
-        return ext != null ? (Map<String, String>) payload.get("ext") : Collections.emptyMap();
+        return JsonPath.read(payload, "message.ext");
+        //Object ext = payload.get("ext");
+        //return ext != null ? (Map<String, String>) payload.get("ext") : Collections.emptyMap();
+    }
+
+    public int getTrumpeteersInRange(){
+        return JsonPath.read(payload, "message.trumpeteersInRange");
+        //return (String) payload.get("id");
     }
 
 
     public URI echoUri(){
-        return URI.create(read(payload, "_links.echo.href"));
+        return URI.create(read(payload, "message._links.echo.href"));
     }
 }

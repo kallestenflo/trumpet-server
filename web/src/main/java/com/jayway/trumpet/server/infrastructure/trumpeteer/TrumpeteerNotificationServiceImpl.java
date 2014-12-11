@@ -3,12 +3,11 @@ package com.jayway.trumpet.server.infrastructure.trumpeteer;
 import com.google.common.collect.Sets;
 import com.jayway.trumpet.server.domain.subscriber.Trumpeteer;
 import com.jayway.trumpet.server.domain.subscriber.TrumpeteerRepository;
-import com.jayway.trumpet.server.domain.trumpeteer.Trumpet;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpetService;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerConfig;
 import com.jayway.trumpet.server.domain.trumpeteer.TrumpeteerNotificationService;
 
-import java.util.*;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,13 +36,9 @@ public class TrumpeteerNotificationServiceImpl implements TrumpeteerNotification
         }
         stream.map(t -> Pair.of(t, trumpeteerRepository.countTrumpeteersInRangeOf(t, config.trumpeteerMaxDistance())))
                 .forEach(p -> {
-                    String trumpetId = UUID.randomUUID().toString();
-                    Map<String, String> extParameters = new HashMap<>();
-                    extParameters.put("trumpeteersInRange", String.valueOf(p.getValue()));
                     Trumpeteer t = p.getKey();
                     // Don't use requestedDistance since the receiving trumpeteer may have another requestedDistance than the trumpeteer that updates its location
-                    Optional<Integer> maxDistance = Optional.of(config.trumpeteerMaxDistance());
-                    trumpetService.trumpetTo(t, Trumpet.create(t, trumpetId, "", "", maxDistance, System.currentTimeMillis(), extParameters));
+                    trumpetService.notifyInRangeTo(t, p.getValue());
                 });
     }
 
